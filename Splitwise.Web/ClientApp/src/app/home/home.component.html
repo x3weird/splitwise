@@ -1,0 +1,93 @@
+<div class="container">
+  <div class="row">
+    <div class="col-md-3">
+      <div class="sidebar">
+        <a [routerLink]="['/home/dashboard']" routerLinkActive="active">Dashboard</a>
+        <a [routerLink]="['/home/activity']" routerLinkActive="active">Recent Activity</a>
+        <a [routerLink]="['/home/all']" routerLinkActive="active">All Expense</a>
+        <a [routerLink]="['/home/groups/new']" routerLinkActive="active" style="padding: 10px; background-color: darkgrey">GROUPS +add</a>
+        <span *ngFor="let g of groupList">
+          <a [routerLink]="['/home/groups/', g.userId]" routerLinkActive="active" style="padding: 7px; font-size:14px;">{{g.name}}</a>
+        </span>
+        <a style="padding: 10px; background-color: darkgrey; cursor:pointer;" data-toggle="modal" data-target="#modalAddFriendForm">FRIENDS +add</a>
+        <span *ngFor="let f of friendList">
+          <a [routerLink]="['/home/friends/', f.userId]" routerLinkActive="active" style="padding: 7px; font-size:14px;">{{f.name}}</a>
+        </span>
+
+        <div style="padding:5px">
+          <div class="card">
+            <div class="card-header" style="padding:3px; font-size:14px;">
+              Invite Friends
+            </div>
+
+            <div class="card-body">
+              <form (ngSubmit)="onInviteFriend()" [formGroup]="inviteFriendForm">
+                <input class="form-control" Id="inviteFriend" type="text" formControlName="email" style="margin-bottom:10px; height:25px" />
+                <button type="submit" class="btn btn-secondary btn-sm">Send invite</button>
+              </form>
+              
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+    <div class="col-md-6">
+      <router-outlet></router-outlet>
+    </div>
+    <div class="col-md-3">
+    </div>
+  </div>
+</div>
+
+
+<div class="modal fade" id="modalAddFriendForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hIdden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Invite Friends</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+
+      <div class="modal-body mx-3">
+        <form (ngSubmit)="onInviteFriend()" [formGroup]="inviteFriendForm" autocomplete="off">
+
+          <div class="form-group" style="display:inline-flex">
+            <label for="emailId" style="margin-top:10px;">To: </label>
+            <div>
+              <tag-input formControlName="email"
+                         [errorMessages]="errorMessages"
+                         [validators]="validators"
+                         [editable]='true'
+                         (onTagEdited)="onTagEdited($event)"
+                         [separatorKeyCodes]="[32,188,186,13,9]"
+                         [placeholder]="'Add email'"
+                         [secondaryPlaceholder]="'Enter email address(es)'"
+                         [clearOnBlur]="false"
+                         [addOnPaste]="true"
+                         [addOnBlur]="false"
+                         [pasteSplitPattern]="splitPattern"
+                         theme='bootstrap'
+                         required
+                         [onAdding]="onAdding">
+              </tag-input>
+            </div>
+          </div>
+
+          <br />
+
+          <textarea id="messsage" rows="3" style="width:420px;" placeholder="Include an optional message" formControlName="message"></textarea>
+
+          <button type="submit" class="btn btn-primary" >Send Invite</button>
+          
+        </form>
+      </div>
+      
+
+    </div>
+  </div>
+</div>

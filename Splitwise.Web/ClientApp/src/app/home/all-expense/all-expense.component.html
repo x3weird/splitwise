@@ -1,0 +1,72 @@
+
+<div class="container">
+  <h3 style="margin-top:20px; margin-bottom:20px;">All expenses</h3>
+
+  <ng-container *ngFor="let expense of expenses">
+
+    <div class="wrap-collabsible" style="width:650px; margin-top:5px">
+      <input id="collapsible" class="toggle" type="checkbox">
+      <label for="collapsible" class="lbl-toggle" (click)="clickExpense(expense.expenseId)">
+        <div style="display:inline-block;">{{expense.createdOn.split('T')[0].split('-')[1]}}-{{expense.createdOn.split('T')[0].split('-')[0]}}<br /> {{expense.createdOn.split('T')[0].split('-')[2]}} </div>
+        <span style="font-size:30px"> {{expense.description}}</span>
+        <div style="display:inline-block; position:absolute; right:150px;">Harshil paid <br /> 200 </div>
+        <div style="display:inline-block; position:absolute; right:0px;">Harshil lent you <br /> 200 </div>
+      </label>
+      <div class="hide" id={{expense.expenseId}}>
+        <div class="content-inner">
+          <div>
+            {{expense.description}} <br /> <b>₹{{expense.amount}}</b> <br /> Added by {{expense.addedBy}} on {{expense.createdOn.split('T')[0]}}
+          </div>
+          <button class="btn btn-primary btn-sm">Edit Expense</button>
+          <hr />
+          <div class="row">
+            <div class="col-md-6" *ngIf="expense.expenseType !='Settle-Up'">
+              <ng-container *ngFor="let ledger of expense.expenseLedgers">
+
+                <div *ngIf="ledger.paid != 0 && ledger.owes != 0">
+                  <b>{{ledger.name}}</b> paid <b>₹{{ledger.paid}}</b> and owes <b>₹{{ledger.owes}}</b>
+                </div>
+                <div *ngIf="ledger.paid == 0 && ledger.owes != 0">
+                  <b>{{ledger.name}}</b> owes <b>₹{{ledger.owes}}</b>
+                </div>
+                <div class="col-md-6" *ngIf="ledger.paid != 0 && ledger.owes == 0">
+                  <b>{{ledger.name}}</b> paid <b>₹{{ledger.paid}}</b>
+                </div>
+              </ng-container>
+            </div>
+
+            <div class="col-md-6" *ngIf="expense.expenseType =='Settle-Up'">
+              <ng-container *ngFor="let ledger of expense.expenseLedgers">
+
+                <div *ngIf="ledger.owes > 0">
+                  <b>{{ledger.name}}</b> paid <b>₹{{ledger.owes}}</b>
+                </div>
+                <div *ngIf="ledger.owes < 0">
+                  <b>{{ledger.name}}</b> recieved <b>₹{{ledger.owes}}</b>
+                </div>
+               
+              </ng-container>
+            </div>
+
+            <div class="col-md-6">
+              NOTES AND COMMENTS
+              <div class="notes-box">
+                Arjunsinh J. Today <br />
+                sdfas
+              </div>
+              <textarea></textarea> <br />
+              <button class="btn btn-primary btn-sm">post</button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </div>
+
+  </ng-container>
+
+  
+</div>
+
+

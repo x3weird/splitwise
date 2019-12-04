@@ -1,0 +1,129 @@
+<div class="container">
+  <br />
+  <h1>
+    Your Account
+  </h1>
+  <div class="card-body">
+    <form (ngSubmit)="onSubmit()" [formGroup]="userForm" autocomplete="off">
+
+      <input type="hidden" id="id" name="id" formControlName="id">
+
+      <div class="form-group">
+        <label class="col-md-2 col-form-label" for="firstNameId">First Name</label>
+        <div class="col-md-8">
+          <input class="form-control" id="firstNameId" type="text" placeholder="Name"
+                 formControlName="firstName"
+                 [ngClass]="{ 'is-invalid': (userForm.get('firstName').touched ||
+                                            userForm.get('firstName').dirty) &&
+                                            !userForm.get('firstName').valid }" />
+          <span class="invalid-feedback">
+            <span *ngIf="userForm.get('firstName').errors?.required">
+              Please enter your first name.
+            </span>
+          </span>
+        </div>
+      </div>
+
+
+      <div class="form-group">
+        <label class="col-md-2 col-form-label" for="lastNameId">Last Name</label>
+        <div class="col-md-8">
+          <input class="form-control" id="lastNameId" type="text" placeholder="Name"
+                 formControlName="lastName"
+                 [ngClass]="{ 'is-invalid': (userForm.get('lastName').touched ||
+                                            userForm.get('lastName').dirty) &&
+                                            !userForm.get('lastName').valid }" />
+          <span class="invalid-feedback">
+            <span *ngIf="userForm.get('lastName').errors?.required">
+              Please enter your last name.
+            </span>
+          </span>
+        </div>
+      </div>
+
+
+      <div class="form-group">
+        <label class="col-md-2 col-form-label" for="emailId">Email</label>
+        <div class="col-md-8">
+          <input class="form-control" id="emailId" type="text" placeholder="Email (required)"
+                 formControlName="email"
+                 [ngClass]="{ 'is-invalid': (userForm.get('email').touched ||
+                                            userForm.get('email').dirty) &&
+                                            !userForm.get('email').valid }" />
+          <span class="invalid-feedback">
+            <span *ngIf="userForm.get('email').errors?.required">
+              Please enter your email address.
+            </span>
+            <span *ngIf="userForm.get('email').errors?.email">
+              Please enter valid email address.
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 col-form-label" for="passwordId">Password</label>
+        <div class="col-md-8">
+          <input class="form-control" id="passwordId" type="password" placeholder="Password (required)"
+                 formControlName="password" [ngClass]="{
+                    'is-invalid': ((userForm.get('password').touched ||
+                                  userForm.get('password').dirty) &&
+                                  !userForm.get('password').valid)
+                  }" />
+          <span class="invalid-feedback">
+            <span *ngIf="userForm.get('password').errors?.required">
+              Please enter your Password.
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 col-form-label" for="numberId">Your Phone Number</label>
+        <div class="col-md-8">
+          <input class="form-control" id="numberId" type="text" placeholder="Phone number"
+                 formControlName="number"
+                 [ngClass]="{ 'is-invalid': (userForm.get('number').touched ||
+                                            userForm.get('number').dirty) &&
+                                            !userForm.get('number').valid }" />
+          <span class="invalid-feedback">
+            <span *ngIf="userForm.get('number').errors?.required">
+              Please enter your number.
+            </span>
+          </span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="col-md-2 col-form-label" for="currencyId">Currency</label>
+        <div class="col-md-8">
+          <select class="form-control" id="currencyId" formControlName="currency"
+                  [ngClass]="{
+                        'is-invalid':
+                                 (userForm.get('currency').touched ||
+                                 userForm.get('currency').dirty) &&
+                                  !userForm.get('currency').valid
+                  }">
+
+            <option value="INR">INR (₹)</option>
+            <option value="USD">USD ($)</option>
+            <option value="CAD">CAD ($)</option>
+          </select>
+
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div class="col-md-4">
+          <button class="btn btn-primary mr-3"
+                  type="submit"
+                  [disabled]="!userForm.valid">
+            save
+          </button>
+        </div>
+      </div>
+    </form>
+
+
+  </div>
+</div>

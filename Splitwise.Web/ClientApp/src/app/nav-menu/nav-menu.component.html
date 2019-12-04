@@ -1,0 +1,26 @@
+
+<header>
+  <nav class="navbar" style="background-color:#5BC5A7">
+    <div class="container">
+      <a (click)="home()" style="cursor:pointer"><img class="logo" src="../assets/logo.svg" /></a>
+
+      <div class="dropdown" *ngIf='service.checkLogin()'>
+        <button type="button" class="btn bg-transparent dropdown-toggle" data-toggle="dropdown" style="display:block">
+          Account
+        </button>
+        <div class="dropdown-menu" style="overflow:visible">
+          <a class="dropdown-item" (click)="account()" style="cursor: pointer">Your Account</a>
+          <a class="dropdown-item" (click)="onLogout()" style="cursor: pointer">Log Out</a>
+        </div>
+
+      </div>
+
+      <div *ngIf='!service.checkLogin() && !service.isRegisterPage()'>
+        <button type="button" class="btn btn-info" (click)="register()" style="cursor: pointer">Register</button>
+      </div>
+      <div *ngIf='!service.checkLogin() && !service.isLoginPage()'>
+        <button type="button" class="btn btn-info" (click)="login()" style="cursor: pointer">Login</button>
+      </div>
+    </div>
+  </nav>
+</header>

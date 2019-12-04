@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="group-heading">START A NEW GROUP</div>
+  <form (ngSubmit)="OnFormSubmit()" [formGroup]="groupAddForm">
+    <div class="form-group">
+      <h2><label for="groupNameId">My group shall be called…</label></h2>
+      <input type="text" id="groupNameId" formControlName="groupName" class="form-control" />
+    </div>
+    <div class="group-heading" style="margin-bottom:unset;">GROUP MEMBERS</div>
+    <p>Tip: Lots of people to add? Send your friends an <a href="#">invite link.</a></p>
+
+    <div formArrayName="groupMembers" *ngFor="let g of groupMembers.controls; let i=index">
+      <div [formGroupName]="i">
+        <input type="text" placeholder="Name" formControlName="name" id="nameId" style="margin-right:10px" />  <input type="text" id="emailId" placeholder="Email" formControlName="email" />
+        <br />
+        <a href="#" (click)="addGroupMember()">+Add Person</a>
+      </div>
+    </div>
+
+    <div class="form-check">
+      <input type="checkbox" class="form-check-input" id="simplifyDebts">
+      <label class="form-check-label" for="simplifyDebts" formControlName="simplifyDebts" >Simplify Debts</label>
+    </div>
+    <button type="submit" class="btn btn-primary">Save</button>
+  </form>
+</div>

@@ -1,0 +1,347 @@
+<div style="display: flex; margin-top: 20px;">
+  <h2>Dashboard</h2>  <button style="margin-left: 110px;" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#modalExpenseForm">Add an Expense</button>  <button style="margin-left: 20px;" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#modalSettleUpForm">Settle Up</button>
+</div>
+________________________________________________________________________________
+<div style="display: flex; margin-top: 10px;">
+  <div>
+    <div style="color: darkgray;">total balance</div>
+    <div style="color: red;">-₹192.89</div>
+  </div>
+  <div style="margin-left: 130px;">
+    <div style="color: darkgray;">you owe</div>
+    <div style="color: red;">-₹192.89</div>
+  </div>
+  <div style="margin-left: 130px;">
+    <div style="color: darkgray;">you are owed</div>
+    <div style="color: darkgray;">₹00.00</div>
+  </div>
+</div>
+________________________________________________________________________________
+
+
+<div class="modal fade" id="modalExpenseForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hIdden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Add an Expense</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <form (ngSubmit)="onAddExpenseModalSubmit()" [formGroup]="modalExpenseForm" autocomplete="off" >
+          <div class="form-group" style="display:inline-flex">
+            <label for="emailId" style="margin-top:10px">With <b>you</b> and: </label>
+            <div>
+              <tag-input formControlName="email"
+                         [errorMessages]="errorMessages"
+                         [validators]="validators"
+                         [editable]='true'
+                         (onTagEdited)="onTagEdited($event)"
+                         [separatorKeyCodes]="[32,188,186,13,9]"
+                         [placeholder]="'Add email'"
+                         [secondaryPlaceholder]="'Enter email address(es)'"
+                         [clearOnBlur]="false"
+                         [addOnPaste]="true"
+                         [addOnBlur]="false"
+                         [pasteSplitPattern]="splitPattern"
+                         theme='bootstrap'
+                         required
+                         [onAdding]="onAdding">
+              </tag-input>
+            </div>
+          </div>
+
+          <br /><br />
+
+          <div *ngIf="modalExpenseForm.get('email').value[0]?.value != null">
+            <div class="form-group">
+              <div>
+                <input id="emailId"
+                       type="text"
+                       class="no-border"
+                       placeholder="Enter a description"
+                       formControlName="description"
+                       [ngClass]="{'is-invalid': (modalExpenseForm.get('description').touched ||
+                                            modalExpenseForm.get('description').dirty) &&
+                                            !modalExpenseForm.get('description').valid }"
+                       style="width:100%;"/>
+
+                <span class="invalid-feedback">
+                  <span *ngIf="modalExpenseForm.get('description').errors?.required">
+                    Please enter description.
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <div>
+                <input id="amountId" type="number" class="no-border" placeholder="0.00" formControlName="amount" style="width:100%"/>
+              </div>
+            </div>
+            <br />
+            <div class="form-group row mb-2">
+              <div class="col-md-8">
+                <div class="form-check">
+                  <label class="form-check-label">
+                    <input class="form-check-input"
+                           id="paidByMultiple"
+                           type="checkbox" (change)="paidByMultiplePeople()"
+                           formControlName="paidByMultiple">Paid By Multiple peopple
+                  </label>
+                </div>
+              </div>
+            </div>
+            <br />
+            <div *ngIf="modalExpenseForm.get('paidByMultiple').value">
+              <div formArrayName="paidBy" *ngFor="let each of paidBy.controls; let i = index">
+                <div [formGroupName]="i">
+                  <div class="form-group" style="margin-left:10px">
+                    <label for="paidByPersonAmountId">{{each.controls.email.value}}</label>
+                    <div>
+                      <input id="paidByPersonAmountId" type="number" class="no-border" placeholder="0.00" formControlName="amount" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <br />
+            </div>
+
+            <div class="form-group" style="display:flex">
+              <label class="control-label" for="splitOption" style="margin-top:-4px">Choose Split option</label>
+              <select class="form-control" id="splitOption" formControlName="splitOption" style="margin-left:10px" (change)="splitExpense()">
+                <option value="Split the expense">Split the expense</option>
+                <option>You owe the full amount</option>
+                <option>They owe the full amount</option>
+              </select>
+            </div>
+
+            <div *ngIf="modalExpenseForm.get('splitOption').value == 'Split the expense'">
+              <div class="form-group row mb-2">
+                <label class="col-md-2 col-form-label pt-0">Expense Type</label>
+                <div class="col-md-8">
+                  <div class="form-check form-check-inline" >
+                    <label class="form-check-label">
+                      <input class="form-check-input"
+                             id="expenseTypeId"
+                             type="radio"
+                             value="Equally"
+                             formControlName="expenseType" (change)="expenseByMultiplePeople()" > Equally
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                      <input class="form-check-input"
+                             id="expenseTypeId"
+                             type="radio"
+                             value="Exact Amount"
+                             formControlName="expenseType" (change)="expenseByMultiplePeople()"> Exact Amount
+                    </label>
+                  </div>
+                  <div class="form-check form-check-inline">
+                    <label class="form-check-label">
+                      <input class="form-check-input"
+                             id="expenseTypeId"
+                             type="radio"
+                             value="Percentage"
+                             formControlName="expenseType" (change)="expenseByMultiplePeople()"> Percentage
+                    </label>
+                  </div>
+                </div>
+              </div>
+
+
+
+
+              <div formArrayName="expenseEach" *ngFor="let each of expenseEach.controls; let i = index">
+                <div [formGroupName]="i">
+
+                  
+                  <div *ngIf="modalExpenseForm.get('expenseType').value == 'Equally'">
+                    <div class="form-group" style="display:inline-flex;">
+                      <label>{{each.controls.email.value}}</label>
+                      <div>
+                        <input id="paidByPerson" type="number" class="no-border" placeholder="0.00" style="margin-left:120px" disabled formControlName="amount" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="modalExpenseForm.get('expenseType').value == 'Exact Amount'">
+                    <div class="form-group" style="display:inline-flex;">
+                      <label>{{each.controls.email.value}}</label>
+                      <div>
+                        <input id="paidByPerson" type="number" class="no-border" placeholder="₹ 0.00" style="margin-left:120px" formControlName="amount" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div *ngIf="modalExpenseForm.get('expenseType').value == 'Percentage'">
+                    <div class="form-group" style="display:inline-flex;">
+                      <label>{{each.controls.email.value}}</label>
+                      <div>
+                        <input id="paidByPerson" type="number" class="no-border" placeholder="0.00 %" style="margin-left:120px" formControlName="amount" />
+                      </div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+
+                <div class="form-group" style="display: inline-flex;">
+                  <label for="date" style="margin-top:10px">Date</label>
+                  <input type="date" class="form-control" id="dateId" formControlName="date" style="margin-left:10px;"
+                         [ngClass]="{
+                                'is-invalid':
+                                      (modalExpenseForm.get('date').touched ||
+                                      modalExpenseForm.get('date').dirty) &&
+                                      !modalExpenseForm.get('date').valid
+                              }" />
+                  <span class="invalid-feedback">
+                    <span *ngIf="modalExpenseForm.get('date').errors?.required">
+                      Please enter Date.
+                    </span>
+                  </span>
+                </div>
+
+                <div class="form-group" style="display:inline-flex">
+                  Note <textarea class="form-control" id="noteId" formControlName="note" style="margin-left:10px;"></textarea>
+                </div>
+
+                <div class="form-group" style="display:flex">
+                  <label class="control-label" for="groupId" style="margin-top:10px">Group</label>
+                  <select class="form-control" id="groupId" formControlName="group"
+                          [ngClass]="{
+                                  'is-invalid':
+                                        (modalExpenseForm.get('group').touched ||
+                                        modalExpenseForm.get('group').dirty) &&
+                                        !modalExpenseForm.get('group').valid
+                                }">
+                    <option value="-1" selected disabled>Choose</option>
+                    <ng-container *ngFor="let item of groupList">
+                      <option value={{item.userId}}>{{item.name}}</option>
+                    </ng-container>
+                  </select>
+                  <span class="invalid-feedback">
+                    <span *ngIf="modalExpenseForm.get('group').errors?.required">
+                      Please select group.
+                    </span>
+                  </span>
+                </div>
+
+                <div class="modal-footer d-flex justify-content-center">
+                  <div>
+                    <button class="btn btn-primary mr-3" type="submit">Save</button>
+                    <button class="btn btn-info mr-3" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">Close</span>
+                        </button>
+                  </div>
+                </div>
+              </div>
+            </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal fade" id="modalSettleUpForm" tabindex="-1" role="dialog" aria-labelledby="myModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">Settle Up</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <form (ngSubmit)="onSettleUpModalSubmit()" [formGroup]="modalSettleUpForm" autocomplete="off">
+
+          <div class="form-group" style="display:flex">
+            <label class="control-label" for="payerId" style="margin-top:10px; margin-right:10px;">Payer</label>
+            <select class="form-control" id="payerId" formControlName="payer">
+              <option value="you">You</option>
+              <ng-container *ngFor="let item of friendList">
+                <option value={{item.userId}}>{{item.name}}</option>
+              </ng-container>
+            </select>
+          </div>
+
+          <div class="form-group" style="display:flex">
+            <label class="control-label" for="recipientId" style="margin-top:10px; margin-right:10px;">Recipient</label>
+            <select class="form-control" id="recipientId" formControlName="recipient">
+              <option value="you">You</option>
+              <ng-container *ngFor="let item of friendList">
+                <option value={{item.userId}}>{{item.name}}</option>
+              </ng-container>
+            </select>
+          </div>
+
+          <br />
+
+          <div class="form-group">
+            <div>
+              <input id="amountId" type="number" class="no-border" placeholder="0.00" formControlName="amount" style="width:100%" />
+            </div>
+          </div>
+
+          <br />
+
+          <div class="form-group" style="display: inline-flex;">
+            <label for="date" style="margin-top:10px">Date</label>
+            <input type="date" class="form-control" id="dateId" formControlName="date" style="margin-left:10px;"
+                   [ngClass]="{
+                                'is-invalid':
+                                      (modalSettleUpForm.get('date').touched ||
+                                      modalSettleUpForm.get('date').dirty) &&
+                                      !modalSettleUpForm.get('date').valid
+                              }" />
+            <span class="invalid-feedback">
+              <span *ngIf="modalSettleUpForm.get('date').errors?.required">
+                Please enter Date.
+              </span>
+            </span>
+          </div>
+
+          <div class="form-group" style="display:inline-flex">
+            Note <textarea class="form-control" id="noteId" formControlName="note" style="margin-left:10px;"></textarea>
+          </div>
+
+          <div class="form-group" style="display:flex">
+            <label class="control-label" for="groupId" style="margin-top:10px; margin-right:10px">Group</label>
+            <select class="form-control" id="groupId" formControlName="group"
+                    [ngClass]="{
+                                  'is-invalid':
+                                        (modalSettleUpForm.get('group').touched ||
+                                        modalSettleUpForm.get('group').dirty) &&
+                                        !modalSettleUpForm.get('group').valid
+                                }">
+              <option value="-1" selected disabled>Choose</option>
+              <ng-container *ngFor="let item of groupList">
+                <option value={{item.userId}}>{{item.name}}</option>
+              </ng-container>
+            </select>
+            <span class="invalid-feedback">
+              <span *ngIf="modalSettleUpForm.get('group').errors?.required">
+                Please select group.
+              </span>
+            </span>
+          </div>
+
+          <div class="modal-footer d-flex justify-content-center">
+            <div>
+              <button class="btn btn-primary mr-3" type="submit">Save</button><button class="btn btn-info mr-3" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">Close</span>
+              </button>
+            </div>
+          </div>
+
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>alert("hello")</script>
