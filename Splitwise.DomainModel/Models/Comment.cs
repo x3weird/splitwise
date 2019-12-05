@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Text;
 
 namespace Splitwise.DomainModel.Models
@@ -12,12 +13,17 @@ namespace Splitwise.DomainModel.Models
         [Key]
         public string Id { get; set; }
 
-        [Required]
         public string UserId { get; set; }
-        [Required]
+        [ForeignKey("UserId")]
+        public ApplicationUser User { get; set; }
+
         public string ExpenseId { get; set; }
+        [ForeignKey("ExpenseId")]
+        public Expense Expense { get; set; }
+
         [Required]
         public string CommentData { get; set; }
+
         [Required]
         public DateTime CreatedOn { get; set; }
 

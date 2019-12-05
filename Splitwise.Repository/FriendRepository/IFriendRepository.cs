@@ -8,11 +8,11 @@ namespace Splitwise.Repository.FriendRepository
 {
     public interface IFriendRepository
     {
-        string InviteFriend(InviteFriend inviteFriend, string email);
-        List<UserNameWithId> GetFriendList(string userId);
+        Task<string> InviteFriend(InviteFriend inviteFriend, string email);
+        Task<List<UserNameWithId>> GetFriendList(string userId);
         Task<List<ExpenseDetail>> GetFriendExpenseList(string friendId, string email);
-        UserExpense UserExpense(string userId);
-        void RemoveFriend(string friendId, string userId);
-        
+        Task<UserExpense> UserExpense(string userId);
+        Task RemoveFriend(string friendId, string userId);
+
     }
 }

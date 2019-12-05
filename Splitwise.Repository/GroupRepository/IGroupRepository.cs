@@ -8,11 +8,11 @@ namespace Splitwise.Repository.GroupRepository
 {
     public interface IGroupRepository
     {
-        List<UserNameWithId> GetGroupList();
-        int AddGroup(GroupAdd groupAdd);
-        int EditGroup(string groupId, GroupAdd groupAdd);
-        GroupDetails GetGroupDetails(string groupId);
-        List<UserExpense> GroupUserExpense(string groupId, List<string> users);
+        Task<List<UserNameWithId>> GetGroupList();
+        Task<int> AddGroup(GroupAdd groupAdd);
+        Task<int> EditGroup(string groupId, GroupAdd groupAdd);
+        Task<GroupDetails> GetGroupDetails(string groupId);
+        Task<List<UserExpense>> GroupUserExpense(string groupId, List<string> users);
         Task<List<ExpenseDetail>> GetGroupExpenseList(string groupId, string email);
     }
 

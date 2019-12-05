@@ -2,12 +2,13 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Splitwise.Repository.Activity
 {
     public interface IActivityRepository
     {
-        List<ActivityDetails> ActivityList(string userId);
-        int DeleteActivity(string activityId);
+        Task<List<ActivityDetails>> ActivityList(string userId);
+        Task<int> DeleteActivity(string activityId);
     }
 }

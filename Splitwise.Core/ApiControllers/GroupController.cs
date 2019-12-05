@@ -22,9 +22,9 @@ namespace Splitwise.Core.ApiControllers
         }
 
         [HttpGet]
-        public List<UserNameWithId> GroupList()
+        public async Task<List<UserNameWithId>> GroupList()
         {
-            return _unitOfWork.Group.GetGroupList();
+            return await _unitOfWork.Group.GetGroupList();
         }
 
         [HttpGet]
@@ -38,13 +38,14 @@ namespace Splitwise.Core.ApiControllers
         }
 
         [HttpPost]
-        public object AddGroup(GroupAdd groupAdd)
+        public async Task<object> AddGroup(GroupAdd groupAdd)
         {
-            if(_unitOfWork.Group.AddGroup(groupAdd)==1)
+            if (await _unitOfWork.Group.AddGroup(groupAdd) == 1)
             {
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return Ok();
-            } else
+            }
+            else
             {
                 return Conflict();
             }
@@ -52,28 +53,28 @@ namespace Splitwise.Core.ApiControllers
 
         [HttpPut]
         [Route("{groupId}/edit")]
-        public object EditGroup(string groupId, GroupAdd groupAdd)
+        public async Task<object> EditGroup(string groupId, GroupAdd groupAdd)
         {
-            if (_unitOfWork.Group.EditGroup(groupId, groupAdd) == 1)
+            if (await _unitOfWork.Group.EditGroup(groupId, groupAdd) == 1)
             {
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return Ok();
             }
             else
             {
                 return Conflict();
-                
+
             }
         }
 
         [HttpGet]
         [Route("{groupId}/edit")]
-        public object GetGroupDetails(string groupId)
+        public async Task<object> GetGroupDetails(string groupId)
         {
             var groupEdit = _unitOfWork.Group.GetGroupDetails(groupId);
             if (groupEdit != null)
             {
-                _unitOfWork.Commit();
+                await _unitOfWork.Commit();
                 return Ok(groupEdit);
             }
             else
@@ -84,9 +85,9 @@ namespace Splitwise.Core.ApiControllers
 
         [HttpPost]
         [Route("{groupId}/UserExpense")]
-        public object GroupUserExpense(string groupId, List<string> users)
+        public async Task<object> GroupUserExpense(string groupId, List<string> users)
         {
-            List<UserExpense> userExpenses = _unitOfWork.Group.GroupUserExpense(groupId, users);
+            List<UserExpense> userExpenses = await _unitOfWork.Group.GroupUserExpense(groupId, users);
             return Ok(userExpenses);
         }
     }

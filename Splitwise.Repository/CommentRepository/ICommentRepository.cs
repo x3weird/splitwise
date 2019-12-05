@@ -9,6 +9,6 @@ namespace Splitwise.Repository.CommentRepository
     public interface ICommentRepository
     {
         Task AddComment(CommentData commentData);
-        void DeleteComment(string commentId);
+        Task DeleteComment(string commentId);
     }
 }

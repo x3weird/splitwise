@@ -7,6 +7,7 @@ using Splitwise.Repository.User;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Splitwise.Repository.UnitOfWork
 {
@@ -19,6 +20,6 @@ namespace Splitwise.Repository.UnitOfWork
         IUserRepository User { get; }
         IGroupRepository Group { get; }
 
-        int Commit();
+        Task<int> Commit();
     }
 }

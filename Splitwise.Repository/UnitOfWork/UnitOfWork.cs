@@ -8,6 +8,7 @@ using Splitwise.Repository.User;
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Splitwise.Repository.UnitOfWork
 {
@@ -21,10 +22,10 @@ namespace Splitwise.Repository.UnitOfWork
         public IFriendRepository Friend { get; private set; }
         public IExpenseRepository Expense { get; private set; }
 
-        public UnitOfWork(SplitwiseDbContext db, IGroupRepository group, 
-                                                IUserRepository user, 
-                                                ICommentRepository comment, 
-                                                IFriendRepository friend, 
+        public UnitOfWork(SplitwiseDbContext db, IGroupRepository group,
+                                                IUserRepository user,
+                                                ICommentRepository comment,
+                                                IFriendRepository friend,
                                                 IExpenseRepository expense,
                                                 IActivityRepository activity)
         {
@@ -37,9 +38,9 @@ namespace Splitwise.Repository.UnitOfWork
             this.Activity = activity;
         }
 
-        public int Commit()
+        public async Task<int> Commit()
         {
-            return _db.SaveChanges();
+            return await _db.SaveChangesAsync();
         }
 
         public void Dispose()

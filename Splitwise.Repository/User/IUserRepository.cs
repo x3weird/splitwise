@@ -16,6 +16,6 @@ namespace Splitwise.Repository.User
         Task<UserDetails> GetUserDetails(string email);
         Task<ApplicationUser> GetCurrentUser(ClaimsPrincipal claimsPrincipal);
         Task Logout();
-        void EditUserDetails(UserDetails userDetails, string email);
+        Task EditUserDetails(UserDetails userDetails, string email);
     }
 }

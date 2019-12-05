@@ -38,10 +38,11 @@ namespace Splitwise.Core.ApiControllers
         public async Task<object> CreateUser(UserDetails userDetails)
         {
             var result = await _unitOfWork.User.CreateUser(userDetails);
-            if(result != null)
+            if (result != null)
             {
                 return Ok(result);
-            } else
+            }
+            else
             {
                 return BadRequest("User already exists");
             }
@@ -53,13 +54,15 @@ namespace Splitwise.Core.ApiControllers
         public async Task<object> Login(Login login)
         {
             var loginReturnModel = await _unitOfWork.User.Login(login);
-            if(loginReturnModel != null)
+            if (loginReturnModel != null)
             {
                 return Ok(loginReturnModel);
-            } else {
+            }
+            else
+            {
                 return BadRequest("InvalId Email and Password");
             }
-            
+
         }
 
         [AllowAnonymous]
@@ -72,11 +75,11 @@ namespace Splitwise.Core.ApiControllers
         }
 
         [HttpPost]
-        public void EditUserDetails(UserDetails userDetails)
+        public async Task EditUserDetails(UserDetails userDetails)
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-            _unitOfWork.User.EditUserDetails(userDetails, userId);
+            await _unitOfWork.User.EditUserDetails(userDetails, userId);
         }
     }
 }

@@ -20,18 +20,18 @@ namespace Splitwise.Repository.GroupRepository
             _userManager = userManager;
         }
 
-        public List<UserNameWithId> GetGroupList()
+        public async Task<List<UserNameWithId>> GetGroupList()
         {
-            List<UserNameWithId> query = _db.Groups.Select(g => new UserNameWithId
+            List<UserNameWithId> query = await _db.Groups.Select(g => new UserNameWithId
             {
                 UserId = g.Id,
                 Name = g.Name
-            }).ToList();
+            }).ToListAsync();
 
             return query;
         }
 
-        public int AddGroup(GroupAdd groupAdd)
+        public async Task<int> AddGroup(GroupAdd groupAdd)
         {
             var query = _db.Groups.Where(g => g.Name.Equals(groupAdd.Name)).SingleOrDefault();
             if (query == null)
@@ -46,7 +46,7 @@ namespace Splitwise.Repository.GroupRepository
                 };
 
                 _db.Groups.Add(group);
-
+                await _db.SaveChangesAsync();
                 foreach (var x in groupAdd.Users)
                 {
                     GroupMember groupMember = new GroupMember
@@ -55,6 +55,7 @@ namespace Splitwise.Repository.GroupRepository
                         UserId = x
                     };
                     _db.GroupMembers.Add(groupMember);
+                    await _db.SaveChangesAsync();
                 }
                 return 1;
             }
@@ -64,7 +65,7 @@ namespace Splitwise.Repository.GroupRepository
             }
         }
 
-        public int EditGroup(string groupId, GroupAdd groupAdd)
+        public async Task<int> EditGroup(string groupId, GroupAdd groupAdd)
         {
             Group gp = _db.Groups.Where(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefault();
 
@@ -88,6 +89,7 @@ namespace Splitwise.Repository.GroupRepository
                     _db.GroupMembers.Add(groupMember);
 
                 }
+                await _db.SaveChangesAsync();
                 return 1;
             }
             else
@@ -96,13 +98,13 @@ namespace Splitwise.Repository.GroupRepository
             }
         }
 
-        public GroupDetails GetGroupDetails(string groupId)
+        public async Task<GroupDetails> GetGroupDetails(string groupId)
         {
             Group gp = _db.Groups.Where(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefault();
 
             if (gp != null)
             {
-                var query = _db.GroupMembers.Join(_db.Users,
+                var query = await _db.GroupMembers.Join(_db.Users,
                                                     g => g.UserId,
                                                     u => u.Id,
                                                     (g, u) => new
@@ -119,7 +121,7 @@ namespace Splitwise.Repository.GroupRepository
                                                             g.Id,
                                                             g.name,
                                                             g.email
-                                                        }).ToList();
+                                                        }).ToListAsync();
 
                 List<GroupUsers> groupUsersList = new List<GroupUsers>();
 
@@ -152,12 +154,12 @@ namespace Splitwise.Repository.GroupRepository
             }
         }
 
-        public List<UserExpense> GroupUserExpense(string groupId, List<string> users)
+        public async Task<List<UserExpense>> GroupUserExpense(string groupId, List<string> users)
         {
             //var query = _db.Expenses.Where(e => e.GroupId.Equals(groupId)); //changes
             List<string> ledgerIdList = new List<string>();
             List<UserExpense> userExpenses = new List<UserExpense>();
-            List<Ledger> ledgers = new List<Ledger>(); 
+            List<Ledger> ledgers = new List<Ledger>();
             //foreach (var x in query)  //changes
             //{
             //    ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(x.Id)).ToList();
@@ -179,6 +181,7 @@ namespace Splitwise.Repository.GroupRepository
                     Id = userId
                 };
                 userExpenses.Add(userExpense);
+                await _db.SaveChangesAsync();
             }
 
             return userExpenses;
@@ -192,7 +195,7 @@ namespace Splitwise.Repository.GroupRepository
             foreach (var expenseId in expenseList)
             {
                 var check = _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId) && g.GroupId.Equals(groupId)).FirstOrDefault();
-                if(check != null)
+                if (check != null)
                 {
                     expenseIdList.Add(expenseId);
                 }

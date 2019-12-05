@@ -52,7 +52,7 @@ namespace Splitwise.Repository.User
             return userDetails;
         }
 
-        public void EditUserDetails(UserDetails userDetails, string id)
+        public async Task EditUserDetails(UserDetails userDetails, string id)
         {
             var user = _db.Users.Where(u => u.Id.Equals(id)).SingleOrDefault();
 
@@ -62,7 +62,7 @@ namespace Splitwise.Repository.User
             user.Currency = userDetails.Currency;
             user.PhoneNumber = userDetails.Number;
 
-            _db.SaveChanges();
+            await _db.SaveChangesAsync();
         }
 
         public async Task<LoginReturnModel> Login(Login login)
@@ -93,7 +93,7 @@ namespace Splitwise.Repository.User
                     {
                         Token = token,
                         Email = LoggedInUser.Email
-                     };
+                    };
                     return loginReturnModel;
                 }
                 else
@@ -122,11 +122,12 @@ namespace Splitwise.Repository.User
             try
             {
                 var userExist = await _userManager.FindByEmailAsync(userDetails.Email);
-                if(userExist == null)
+                if (userExist == null)
                 {
                     return await _userManager.CreateAsync(user, userDetails.Password);
-                    
-                } else
+
+                }
+                else
                 {
                     userExist.IsRegistered = true;
                     userExist.PhoneNumber = userDetails.Number;

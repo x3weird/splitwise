@@ -22,21 +22,21 @@ namespace Splitwise.Core.ApiControllers
         }
 
         [HttpGet]
-        public List<UserNameWithId> Friend()
+        public async Task<List<UserNameWithId>> Friend()
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-            return _unitOfWork.Friend.GetFriendList(userId);
+            return await _unitOfWork.Friend.GetFriendList(userId);
         }
 
         [HttpPost]
         [Route("inviteFriend")]
-        public object InviteFriend(InviteFriend inviteFriend)
+        public async Task<object> InviteFriend(InviteFriend inviteFriend)
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-            _unitOfWork.Friend.InviteFriend(inviteFriend, email);
-            _unitOfWork.Commit();
+            await _unitOfWork.Friend.InviteFriend(inviteFriend, email);
+            await _unitOfWork.Commit();
             return Ok();
         }
 
@@ -48,13 +48,13 @@ namespace Splitwise.Core.ApiControllers
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
             var expenseDetail = await _unitOfWork.Friend.GetFriendExpenseList(friendId, currentUserId);
             return expenseDetail;
-        } 
+        }
 
         [HttpGet]
         [Route("users/{userId}")]
-        public UserExpense UserExpense(string userId)
+        public async Task<UserExpense> UserExpense(string userId)
         {
-            return _unitOfWork.Friend.UserExpense(userId);
+            return await _unitOfWork.Friend.UserExpense(userId);
         }
     }
 }

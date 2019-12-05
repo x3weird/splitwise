@@ -161,6 +161,10 @@ namespace Splitwise.DomainModel.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("ActivityId");
+
+                    b.HasIndex("ActivityUserId");
+
                     b.ToTable("ActivityUsers");
                 });
 
@@ -233,13 +237,15 @@ namespace Splitwise.DomainModel.Migrations
 
                     b.Property<DateTime>("CreatedOn");
 
-                    b.Property<string>("ExpenseId")
-                        .IsRequired();
+                    b.Property<string>("ExpenseId");
 
-                    b.Property<string>("UserId")
-                        .IsRequired();
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpenseId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Comments");
                 });
@@ -249,8 +255,7 @@ namespace Splitwise.DomainModel.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("AddedBy")
-                        .IsRequired();
+                    b.Property<string>("AddedBy");
 
                     b.Property<float>("Amount");
 
@@ -268,6 +273,8 @@ namespace Splitwise.DomainModel.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddedBy");
+
                     b.ToTable("Expenses");
                 });
 
@@ -276,13 +283,15 @@ namespace Splitwise.DomainModel.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("FriendId")
-                        .IsRequired();
+                    b.Property<string>("FriendId");
 
-                    b.Property<string>("UserId")
-                        .IsRequired();
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("FriendId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Friends");
                 });
@@ -292,8 +301,7 @@ namespace Splitwise.DomainModel.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("AddedBy")
-                        .IsRequired();
+                    b.Property<string>("AddedBy");
 
                     b.Property<DateTime>("CreatedOn");
 
@@ -306,6 +314,8 @@ namespace Splitwise.DomainModel.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AddedBy");
+
                     b.ToTable("Groups");
                 });
 
@@ -314,9 +324,11 @@ namespace Splitwise.DomainModel.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("ExpenseId");
+                    b.Property<string>("ExpenseId")
+                        .IsRequired();
 
-                    b.Property<string>("GroupId");
+                    b.Property<string>("GroupId")
+                        .IsRequired();
 
                     b.HasKey("Id");
 
@@ -328,13 +340,15 @@ namespace Splitwise.DomainModel.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("GroupId")
-                        .IsRequired();
+                    b.Property<string>("GroupId");
 
-                    b.Property<string>("UserId")
-                        .IsRequired();
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("GroupId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("GroupMembers");
                 });
@@ -348,13 +362,15 @@ namespace Splitwise.DomainModel.Migrations
 
                     b.Property<float>("DebitedAmount");
 
-                    b.Property<string>("ExpenseId")
-                        .IsRequired();
+                    b.Property<string>("ExpenseId");
 
-                    b.Property<string>("UserId")
-                        .IsRequired();
+                    b.Property<string>("UserId");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ExpenseId");
+
+                    b.HasIndex("UserId");
 
                     b.ToTable("Ledgers");
                 });
@@ -402,6 +418,75 @@ namespace Splitwise.DomainModel.Migrations
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade);
+                });
+
+            modelBuilder.Entity("Splitwise.DomainModel.Models.ActivityUser", b =>
+                {
+                    b.HasOne("Splitwise.DomainModel.Models.Activity", "Activity")
+                        .WithMany()
+                        .HasForeignKey("ActivityId");
+
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("ActivityUserId");
+                });
+
+            modelBuilder.Entity("Splitwise.DomainModel.Models.Comment", b =>
+                {
+                    b.HasOne("Splitwise.DomainModel.Models.Expense", "Expense")
+                        .WithMany()
+                        .HasForeignKey("ExpenseId");
+
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Splitwise.DomainModel.Models.Expense", b =>
+                {
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("AddedBy");
+                });
+
+            modelBuilder.Entity("Splitwise.DomainModel.Models.Friend", b =>
+                {
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User2")
+                        .WithMany()
+                        .HasForeignKey("FriendId");
+
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User1")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Splitwise.DomainModel.Models.Group", b =>
+                {
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("AddedBy");
+                });
+
+            modelBuilder.Entity("Splitwise.DomainModel.Models.GroupMember", b =>
+                {
+                    b.HasOne("Splitwise.DomainModel.Models.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId");
+
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
+                });
+
+            modelBuilder.Entity("Splitwise.DomainModel.Models.Ledger", b =>
+                {
+                    b.HasOne("Splitwise.DomainModel.Models.Expense", "Expense")
+                        .WithMany()
+                        .HasForeignKey("ExpenseId");
+
+                    b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User")
+                        .WithMany()
+                        .HasForeignKey("UserId");
                 });
 #pragma warning restore 612, 618
         }

@@ -17,6 +17,11 @@ export interface AutoCompleteModel {
 })
 export class DashboardComponent implements OnInit {
 
+  userAmountList: any;
+  youAreOwed: number;
+  youOwe: number;
+  totalBalance: number = 0;
+
   public validators = [this.must_be_email];
   public errorMessages = {
     'must_be_email': 'Please be sure to use a valid email format'
@@ -107,7 +112,24 @@ export class DashboardComponent implements OnInit {
   }
   dashboard() {
     return this.service.dashboard().subscribe(
-        (data) => console.log(data),
+      (data) => {
+                  this.userAmountList = data;
+        console.log(data);
+        this.youAreOwed = 0;
+        this.youOwe = 0;
+
+        for (var i = 0; i < this.userAmountList.length; i++) {
+          if (this.userAmountList[i].amount > 0) {
+            this.youAreOwed += this.userAmountList[i].amount;
+          }
+          if (this.userAmountList[i].amount < 0) {
+            this.youOwe += this.userAmountList[i].amount;
+          }
+          this.totalBalance += this.userAmountList[i].amount;
+
+        }
+
+      },
         (err) => console.log(err)
     );
   }

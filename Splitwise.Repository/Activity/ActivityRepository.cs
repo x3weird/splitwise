@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Splitwise.Repository.Activity
 {
@@ -15,12 +16,13 @@ namespace Splitwise.Repository.Activity
             _db = db;
         }
 
-        public List<ActivityDetails> ActivityList(string userId)
+        public async Task<List<ActivityDetails>> ActivityList(string userId)
         {
 
             List<ActivityDetails> activityDetails = new List<ActivityDetails>();
             foreach (var activities in _db.Activities)
             {
+
                 foreach (var activityUsers in _db.ActivityUsers.Where(a => a.ActivityId.Equals(activities.Id) && a.ActivityUserId.Equals(userId)))
                 {
                     ActivityDetails activityDetail = new ActivityDetails
@@ -32,17 +34,19 @@ namespace Splitwise.Repository.Activity
                         Log2 = activityUsers.Log
                     };
                     activityDetails.Add(activityDetail);
+                    await _db.SaveChangesAsync();
                 }
             }
             return activityDetails;
         }
 
-        public int DeleteActivity(string activityId)
+        public async Task<int> DeleteActivity(string activityId)
         {
             var activity = _db.Activities.Where(a => a.Id.Equals(activityId)).FirstOrDefault();
-            if(activity != null)
+            if (activity != null)
             {
                 _db.Activities.Remove(activity);
+                await _db.SaveChangesAsync();
                 return 1;
             }
             else

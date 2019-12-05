@@ -23,21 +23,21 @@ namespace Splitwise.Core.ApiControllers
 
         [HttpPost]
         [Route("addExpense")]
-        public object AddExpense(AddExpense expense)
+        public async Task<object> AddExpense(AddExpense expense)
         {
-            _unitOfWork.Expense.AddExpense(expense);
-            _unitOfWork.Commit();
+            await _unitOfWork.Expense.AddExpense(expense);
+            await _unitOfWork.Commit();
             return Ok();
         }
 
         [HttpPost]
         [Route("settleUp")]
-        public object SettleUp(SettleUp settleUp)
+        public async Task<object> SettleUp(SettleUp settleUp)
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
-            _unitOfWork.Expense.SettleUp(settleUp,email);
-            _unitOfWork.Commit();
+            await _unitOfWork.Expense.SettleUp(settleUp, email);
+            await _unitOfWork.Commit();
             return Ok();
         }
 
@@ -45,15 +45,15 @@ namespace Splitwise.Core.ApiControllers
         public async Task<List<ExpenseDetail>> GetExpenseList()
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
-            var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value; 
+            var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
             var expenseDetailList = await _unitOfWork.Expense.GetExpenseList(email);
             return expenseDetailList;
         }
 
-        public object DeleteExpense(string expenseId)
+        public async Task<object> DeleteExpense(string expenseId)
         {
-            int i = _unitOfWork.Expense.DeleteExpense(expenseId);
-            if(i==1)
+            int i = await _unitOfWork.Expense.DeleteExpense(expenseId);
+            if (i == 1)
             {
                 return Ok();
             }
@@ -61,16 +61,16 @@ namespace Splitwise.Core.ApiControllers
             {
                 return Conflict();
             }
-            
+
         }
 
         [HttpGet]
         [Route("dashboard")]
-        public object Dashboard()
+        public async Task<object> Dashboard()
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
-            return _unitOfWork.Expense.Dashboard(email);
-        } 
+            return await _unitOfWork.Expense.Dashboard(email);
+        }
     }
 }
