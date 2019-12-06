@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormGroup, FormBuilder, FormArray } from '@angular/forms';
+import { UserService } from 'src/app/shared/user.service';
 
 @Component({
   selector: 'app-group-add',
@@ -10,17 +11,17 @@ export class GroupAddComponent implements OnInit {
 
   groupAddForm: FormGroup;
 
-  get groupMember(): FormArray {
-    return <FormArray>this.groupAddForm.get('groupMembers')
+  get users(): FormArray {
+    return <FormArray>this.groupAddForm.get('users')
   }
 
-  constructor(private fb: FormBuilder) { }
+  constructor(private fb: FormBuilder, private service: UserService) { }
 
   ngOnInit() {
     this.groupAddForm = this.fb.group({
-      groupName: '',
+      name: '',
       simplifyDebts: false,
-      groupMembers: this.fb.array([this.buildGroupMember()])
+      users: this.fb.array([this.buildGroupMember()])
     });
 
   }
@@ -29,19 +30,28 @@ export class GroupAddComponent implements OnInit {
     return this.fb.group({
       name: '',
       email: ''
-    })
+    });
   }
 
   addGroupMember(): void {
-    this.groupMember.push(this.buildGroupMember());
+    this.users.push(this.buildGroupMember());
   }
 
   onSubmit() {
+    console.log(this.groupAddForm.value);
+    this.service.groupAdd(this.groupAddForm.value).subscribe(
+      (data: any) => { console.log(data); },
+      (err: any) => { console.log(err); }
+    );
+
+    this.service.groupAdd(this.groupAddForm.value);
     const groupMember = this.fb.group({
       name: '',
       email: ''
     });
-    this.groupAddForm.setControl('groupMembers', this.fb.array([groupMember]));
+    this.groupAddForm.setControl('users', this.fb.array([groupMember]));
+    this.groupAddForm.reset();
+    location.reload();
   }
-
+  
 }

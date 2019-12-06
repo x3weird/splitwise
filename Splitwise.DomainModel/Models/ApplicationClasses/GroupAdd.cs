@@ -11,8 +11,8 @@ namespace Splitwise.DomainModel.Models
         public string Name { get; set; }
         public string AddedBy { get; set; }
         public DateTime CreatedOn { get; set; }
-        public Boolean SimplifyDebts { get; set; }
-        public List<string> Users { get; set; }
+        public bool SimplifyDebts { get; set; }
+        public List<GroupUsers> Users { get; set; }
 
         #endregion
     }

@@ -1,8 +1,8 @@
-<div style="display: flex; margin-top: 20px;">
+<div style="display: flex; margin-top: 20px; margin-bottom:20px;">
   <h2>Recent Activity</h2> 
 </div>
-<div class="card">
-  <div class="card-body" *ngFor="let activity of activities">
+<div class="card" *ngFor="let activity of activities">
+  <div class="card-body" >
     <h5 class="card-title">{{activity.log}}</h5>
     <p class="card-text">{{activity.log2}}</p>
   </div>

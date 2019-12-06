@@ -104,4 +104,8 @@ export class UserService {
   getActivities() {
     return this.http.get(this.BaseURL + "/activities");
   }
+
+  groupAdd(groupAddForm: any) {
+    return this.http.post(this.BaseURL + "/groups" , groupAddForm);
+  }
 }

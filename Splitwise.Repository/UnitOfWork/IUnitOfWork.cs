@@ -1,4 +1,4 @@
-﻿using Splitwise.Repository.Activity;
+﻿using Splitwise.Repository.ActivityRepository;
 using Splitwise.Repository.CommentRepository;
 using Splitwise.Repository.ExpenseRepository;
 using Splitwise.Repository.FriendRepository;

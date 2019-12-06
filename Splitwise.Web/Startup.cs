@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Splitwise.DomainModel.Models;
 using Splitwise.Models;
-using Splitwise.Repository.Activity;
+using Splitwise.Repository.ActivityRepository;
 using Splitwise.Repository.CommentRepository;
 using Splitwise.Repository.ExpenseRepository;
 using Splitwise.Repository.FriendRepository;

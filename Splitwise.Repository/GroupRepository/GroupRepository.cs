@@ -31,16 +31,17 @@ namespace Splitwise.Repository.GroupRepository
             return query;
         }
 
-        public async Task<int> AddGroup(GroupAdd groupAdd)
+        public async Task<int> AddGroup(GroupAdd groupAdd, string email)
         {
+            var currentUserId = await _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s=>s.Id).FirstOrDefaultAsync();
             var query = _db.Groups.Where(g => g.Name.Equals(groupAdd.Name)).SingleOrDefault();
             if (query == null)
             {
                 Group group = new Group
                 {
                     Name = groupAdd.Name,
-                    AddedBy = groupAdd.AddedBy,
-                    CreatedOn = groupAdd.CreatedOn,
+                    AddedBy = currentUserId,
+                    CreatedOn = DateTime.Now,
                     SimplifyDebts = groupAdd.SimplifyDebts,
                     IsDeleted = false
                 };
@@ -49,14 +50,81 @@ namespace Splitwise.Repository.GroupRepository
                 await _db.SaveChangesAsync();
                 foreach (var x in groupAdd.Users)
                 {
-                    GroupMember groupMember = new GroupMember
+                    var User = await _db.Users.Where(u=>u.Email.Equals(x.Email.ToLower())).FirstOrDefaultAsync();
+                    if (User == null)
                     {
-                        GroupId = group.Id,
-                        UserId = x
+                        var user = new ApplicationUser
+                        {
+                            UserName = x.Email,
+                            Email = x.Email,
+                            FirstName = x.Name,
+                            LastName = x.Email,
+                            Currency = "INR",
+                            PhoneNumber = "1111111111",
+                            IsRegistered = false
+                        };
+                        var addedUser = _userManager.CreateAsync(user, "Random@123");
+
+                        if (addedUser.Result.Succeeded)
+                        {
+                            await _db.SaveChangesAsync();
+                        }
+
+
+                        Friend friend = new Friend()
+                        {
+                            FriendId = user.Id,
+                            UserId = currentUserId
+                        };
+
+                        _db.Friends.Add(friend);
+
+                        GroupMember groupMember = new GroupMember
+                        {
+                            GroupId = group.Id,
+                            UserId = user.Id
+                        };
+                        _db.GroupMembers.Add(groupMember);
+
+                    }
+                    else
+                    {
+                        var checkFriend = _db.Friends.Where(f => (f.FriendId.Equals(User.Id) && f.UserId.Equals(currentUserId)) || (f.FriendId.Equals(currentUserId) && f.UserId.Equals(User.Id))).FirstOrDefault();
+
+                        if (checkFriend == null)
+                        {
+                            Friend friend = new Friend
+                            {
+                                FriendId = User.Id,
+                                UserId = currentUserId
+                            };
+                            _db.Add(friend);
+                        }
+
+                        GroupMember groupMember = new GroupMember
+                        {
+                            GroupId = group.Id,
+                            UserId = User.Id
+                        };
+                        _db.GroupMembers.Add(groupMember);
+
+                        
+                    }
+
+                    Activity activity = new Activity()
+                    {
+                        Log = await _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.FirstName).FirstOrDefaultAsync() + " created the group " + groupAdd.Name,
+                        ActivityOn = "Group",
+                        ActivityOnId = group.Id
                     };
-                    _db.GroupMembers.Add(groupMember);
+
+                    _db.Activities.Add(activity);
+
                     await _db.SaveChangesAsync();
                 }
+
+
+
                 return 1;
             }
             else
@@ -84,7 +152,7 @@ namespace Splitwise.Repository.GroupRepository
                     GroupMember groupMember = new GroupMember
                     {
                         GroupId = groupId,
-                        UserId = userId
+                        //UserId = 
                     };
                     _db.GroupMembers.Add(groupMember);
 
@@ -129,7 +197,7 @@ namespace Splitwise.Repository.GroupRepository
                 {
                     GroupUsers groupUsers = new GroupUsers
                     {
-                        Id = q.Id,
+                        //Id = q.Id,
                         Name = q.name,
                         Email = q.email
                     };

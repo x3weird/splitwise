@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Splitwise.Repository.Activity
+namespace Splitwise.Repository.ActivityRepository
 {
     public class ActivityRepository : IActivityRepository
     {
@@ -22,8 +22,23 @@ namespace Splitwise.Repository.Activity
             List<ActivityDetails> activityDetails = new List<ActivityDetails>();
             foreach (var activities in _db.Activities)
             {
-
-                foreach (var activityUsers in _db.ActivityUsers.Where(a => a.ActivityId.Equals(activities.Id) && a.ActivityUserId.Equals(userId)))
+                var activityLog = _db.ActivityUsers.Where(a => a.ActivityId.Equals(activities.Id) && a.ActivityUserId.Equals(userId));
+                if (activityLog != null)
+                {
+                    foreach (var activityUsers in activityLog)
+                    {
+                        ActivityDetails activityDetail = new ActivityDetails
+                        {
+                            Id = activities.Id,
+                            Log = activities.Log,
+                            ActivityOn = activities.ActivityOn,
+                            ActivityOnId = activities.ActivityOnId,
+                            Log2 = activityUsers.Log
+                        };
+                        activityDetails.Add(activityDetail);
+                        await _db.SaveChangesAsync();
+                    }
+                } else
                 {
                     ActivityDetails activityDetail = new ActivityDetails
                     {
@@ -31,11 +46,10 @@ namespace Splitwise.Repository.Activity
                         Log = activities.Log,
                         ActivityOn = activities.ActivityOn,
                         ActivityOnId = activities.ActivityOnId,
-                        Log2 = activityUsers.Log
                     };
                     activityDetails.Add(activityDetail);
-                    await _db.SaveChangesAsync();
                 }
+                
             }
             return activityDetails;
         }

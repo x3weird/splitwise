@@ -9,8 +9,8 @@ namespace Splitwise.DomainModel.Models
     {
         #region Properties
 
-        [Key]
-        public string Id { get; set; }
+        //[Key]
+        //public string Id { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         

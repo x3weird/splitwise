@@ -155,13 +155,37 @@ namespace Splitwise.Repository.ExpenseRepository
 
             if (addExpense.GroupId != "")
             {
+                //Activity activity = new Activity()
+                //{
+                //    Log = _db.Users.Where(u => u.Email.ToLower().Equals(addExpense.AddedBy.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " added " + addExpense.Description,
+                //    ActivityOn = "Expense",
+                //    ActivityOnId = expense.Id
+                //};
+                //_db.Activities.Add(activity);
+
+                Activity activityVar = new Activity()
+                {
+                    Log = _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefault() + " added " + addExpense.Description + " in " + _db.Groups.Where(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).FirstOrDefault(),
+                    ActivityOn = "Group",
+                    ActivityOnId = addExpense.GroupId
+                };
+                _db.Activities.Add(activityVar);
+
                 GroupExpense groupExpense = new GroupExpense()
                 {
                     ExpenseId = expense.Id,
                     GroupId = addExpense.GroupId
                 };
-                _db.GroupExpenses.Add(groupExpense);
+                _db.GroupExpenses.Add(groupExpense); 
             }
+
+            Activity activity = new Activity()
+            {
+                Log = _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefault() + " added " + addExpense.Description,
+                ActivityOn = "Expense",
+                ActivityOnId = expense.Id
+            };
+            _db.Activities.Add(activity);
 
             foreach (var item in addExpense.EmailList)
             {
@@ -185,6 +209,7 @@ namespace Splitwise.Repository.ExpenseRepository
                         else
                         {
                             ledger.DebitedAmount = 0 - p.Amount;
+                            
                         }
 
                     }
@@ -192,6 +217,27 @@ namespace Splitwise.Repository.ExpenseRepository
 
                 ledger.ExpenseId = expense.Id;
                 ledger.UserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault();
+                if (ledger.DebitedAmount > 0)
+                {
+                    ActivityUser activityUser = new ActivityUser()
+                    {
+                        Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " gets back ₹" + ledger.DebitedAmount,
+                        ActivityId = activity.Id,
+                        ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
+                    };
+                    _db.ActivityUsers.Add(activityUser);
+                } else
+                {
+                    ActivityUser activityUser = new ActivityUser()
+                    {
+                        Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " owe ₹" + ledger.DebitedAmount,
+                        ActivityId = activity.Id,
+                        ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
+                    };
+                    _db.ActivityUsers.Add(activityUser);
+                }
+                
+
                 _db.Ledgers.Add(ledger);
                 _db.SaveChanges();
             }

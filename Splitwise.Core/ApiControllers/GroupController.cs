@@ -40,7 +40,9 @@ namespace Splitwise.Core.ApiControllers
         [HttpPost]
         public async Task<object> AddGroup(GroupAdd groupAdd)
         {
-            if (await _unitOfWork.Group.AddGroup(groupAdd) == 1)
+            var claimsIdentity = this.User.Identity as ClaimsIdentity;
+            var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
+            if (await _unitOfWork.Group.AddGroup(groupAdd, email) == 1)
             {
                 await _unitOfWork.Commit();
                 return Ok();

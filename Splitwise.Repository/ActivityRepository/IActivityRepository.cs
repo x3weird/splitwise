@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Splitwise.Repository.Activity
+namespace Splitwise.Repository.ActivityRepository
 {
     public interface IActivityRepository
     {
