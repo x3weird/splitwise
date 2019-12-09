@@ -108,4 +108,8 @@ export class UserService {
   groupAdd(groupAddForm: any) {
     return this.http.post(this.BaseURL + "/groups" , groupAddForm);
   }
+
+  addComment(comment: any) {
+    return this.http.post(this.BaseURL + "/comments", comment);
+  }
 }

@@ -2,15 +2,15 @@
 <div class="container">
   <h3 style="margin-top:20px; margin-bottom:20px;">All expenses</h3>
 
-  <ng-container *ngFor="let expense of expenses">
-
+  <ng-container *ngFor="let expense of expenses; index as i">
     <div class="wrap-collabsible" style="width:650px; margin-top:5px">
       <input id="collapsible" class="toggle" type="checkbox">
       <label for="collapsible" class="lbl-toggle" (click)="clickExpense(expense.expenseId)">
         <div style="display:inline-block;">{{expense.createdOn.split('T')[0].split('-')[1]}}-{{expense.createdOn.split('T')[0].split('-')[0]}}<br /> {{expense.createdOn.split('T')[0].split('-')[2]}} </div>
-        <span style="font-size:30px"> {{expense.description}}</span>
-        <div style="display:inline-block; position:absolute; right:150px;">Harshil paid <br /> 200 </div>
-        <div style="display:inline-block; position:absolute; right:0px;">Harshil lent you <br /> 200 </div>
+        <span style="font-size:20px"> {{expense.description}}</span>
+
+        <div style="display:inline-block; position:absolute; right:180px;">{{paidBy[i]}} paid <br /> {{paid[i]}} </div>
+        <div style="display:inline-block; position:absolute; right:0px;">{{lentBy[i]}} lent {{lentTo[i]}} <br /> {{lent[i]}} </div>
       </label>
       <div class="hide" id={{expense.expenseId}}>
         <div class="content-inner">
@@ -47,15 +47,17 @@
                
               </ng-container>
             </div>
-
             <div class="col-md-6">
-              NOTES AND COMMENTS
-              <div class="notes-box">
-                Arjunsinh J. Today <br />
-                sdfas
-              </div>
-              <textarea></textarea> <br />
-              <button class="btn btn-primary btn-sm">post</button>
+              <form (ngSubmit)="onSubmit(expense.expenseId)" [formGroup]="commentForm">
+                <p style="display:block">NOTES AND COMMENTS</p>
+                <ng-container *ngFor="let comment of expense.comments">
+                  <div class="notes-box" style="display:block">
+                    {{comment}}
+                  </div>
+                </ng-container>
+                <textarea formControlName="commentData" style="display:block"></textarea> <br />
+                <button class="btn btn-primary btn-sm" type="submit">post</button>
+              </form>
             </div>
           </div>
 

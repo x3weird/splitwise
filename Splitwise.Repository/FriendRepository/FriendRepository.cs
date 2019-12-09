@@ -187,7 +187,7 @@ namespace Splitwise.Repository.FriendRepository
             //var expenseIdList = _db.Ledgers.Where(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
             var expenses = _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
-            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName + " " + u.LastName }).Distinct();
+            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName }).Distinct();
             foreach (var expense in expenses)
             {
                 var ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(expense.Id));

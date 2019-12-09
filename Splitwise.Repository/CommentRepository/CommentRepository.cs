@@ -15,14 +15,14 @@ namespace Splitwise.Repository.CommentRepository
         {
             _db = db;
         }
-        public async Task AddComment(CommentData commentData)
+        public async Task AddComment(CommentData commentData,string currentUserId)
         {
             Comment comment = new Comment()
             {
                 CommentData = commentData.Content,
                 ExpenseId = commentData.ExpenseId,
-                UserId = commentData.UserId,
-                CreatedOn = commentData.CreatedOn
+                UserId = currentUserId,
+                CreatedOn = DateTime.Now
             };
             await _db.Comments.AddAsync(comment);
         }

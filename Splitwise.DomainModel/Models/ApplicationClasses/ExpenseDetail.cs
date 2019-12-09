@@ -18,7 +18,7 @@ namespace Splitwise.DomainModel.Models
         public string AddedBy { get; set; }
         public float Amount { get; set; }
         public List<ExpenseLedger> ExpenseLedgers { get; set; }
-        public List<string> Comment { get; set; }
+        public List<string> Comments { get; set; }
 
         #endregion
     }

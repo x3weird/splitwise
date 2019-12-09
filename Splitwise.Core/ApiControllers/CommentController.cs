@@ -4,6 +4,7 @@ using Splitwise.DomainModel.Models;
 using Splitwise.Repository.UnitOfWork;
 using System;
 using System.Collections.Generic;
+using System.Security.Claims;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -24,7 +25,10 @@ namespace Splitwise.Core.ApiControllers
         [HttpPost]
         public async Task<object> AddComment(CommentData commentData)
         {
-            await _unitOfWork.Comment.AddComment(commentData);
+            var claimsIdentity = this.User.Identity as ClaimsIdentity;
+            var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            await _unitOfWork.Comment.AddComment(commentData, currentUserId);
+            await _unitOfWork.Commit();
             return Ok();
         }
 

@@ -12,7 +12,7 @@ export class GroupAddComponent implements OnInit {
   groupAddForm: FormGroup;
 
   get users(): FormArray {
-    return <FormArray>this.groupAddForm.get('users')
+    return <FormArray>this.groupAddForm.get('users');
   }
 
   constructor(private fb: FormBuilder, private service: UserService) { }
