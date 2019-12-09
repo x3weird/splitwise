@@ -112,4 +112,8 @@ export class UserService {
   addComment(comment: any) {
     return this.http.post(this.BaseURL + "/comments", comment);
   }
+
+  deleteExpense(expenseId: string) {
+    return this.http.delete(this.BaseURL + "/expenses/" + expenseId);
+  }
 }

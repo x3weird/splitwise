@@ -32,39 +32,43 @@ namespace Splitwise.Repository.ExpenseRepository
             var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName}).Distinct();
             foreach (var expense in expenses)
             {
-                var ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(expense.Id));
-                var userIdLedger = ledgers.Select(l => l.UserId).Distinct();
-
-                List<ExpenseLedger> ExpenseLedgerList = new List<ExpenseLedger>();
-
-                foreach (var ledger in ledgers)
+                if (expense.IsDeleted == false)
                 {
-                    ExpenseLedger expenseLedger = new ExpenseLedger
+                    var ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(expense.Id));
+                    var userIdLedger = ledgers.Select(l => l.UserId).Distinct();
+
+                    List<ExpenseLedger> ExpenseLedgerList = new List<ExpenseLedger>();
+
+                    foreach (var ledger in ledgers)
                     {
-                        UserId = ledger.UserId,
-                        Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
-                        Paid = ledger.CreditedAmount,
-                        Owes = ledger.DebitedAmount
+                        ExpenseLedger expenseLedger = new ExpenseLedger
+                        {
+                            UserId = ledger.UserId,
+                            Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
+                            Paid = ledger.CreditedAmount,
+                            Owes = ledger.DebitedAmount
+                        };
+                        ExpenseLedgerList.Add(expenseLedger);
+                    }
+
+                    var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).Select(s => s.CommentData).ToListAsync();
+
+                    ExpenseDetail expenseDetail = new ExpenseDetail
+                    {
+                        ExpenseLedgers = ExpenseLedgerList,
+                        AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
+                        Amount = expense.Amount,
+                        ExpenseId = expense.Id,
+                        CreatedOn = expense.CreatedOn,
+                        ExpenseType = expense.ExpenseType,
+                        Note = expense.Note,
+                        Description = expense.Description,
+                        Comments = commentList
                     };
-                    ExpenseLedgerList.Add(expenseLedger);
+
+                    ExpenseDetailList.Add(expenseDetail);
                 }
-
-                var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).Select(s=>s.CommentData).ToListAsync();
-
-                ExpenseDetail expenseDetail = new ExpenseDetail
-                {
-                    ExpenseLedgers = ExpenseLedgerList,
-                    AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
-                    Amount = expense.Amount,
-                    ExpenseId = expense.Id,
-                    CreatedOn = expense.CreatedOn,
-                    ExpenseType = expense.ExpenseType,
-                    Note = expense.Note,
-                    Description = expense.Description,
-                    Comments = commentList
-                };
-
-                ExpenseDetailList.Add(expenseDetail);
+                
             }
 
             return ExpenseDetailList;
@@ -352,54 +356,58 @@ namespace Splitwise.Repository.ExpenseRepository
                 {
                     if(_db.Expenses.Where(e=>e.Description.Equals("Settle-Up") && e.Id.Equals(expenseId)).FirstOrDefault()==null)
                     {
-                        var check = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount > 0 && l.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
-                        if (check != null)
+                        if(_db.Expenses.Where(e=>e.IsDeleted.Equals(false) && e.Id.Equals(expenseId)).FirstOrDefault() != null)
                         {
-                            var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount < 0).FirstOrDefaultAsync();
-                            if (userCheck != null)
+                            var check = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount > 0 && l.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
+                            if (check != null)
                             {
-                                var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
-                                if (a == null)
+                                var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount < 0).FirstOrDefaultAsync();
+                                if (userCheck != null)
                                 {
-                                    UserExpense userExpense = new UserExpense()
+                                    var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
+                                    if (a == null)
                                     {
-                                        Id = userCheck.UserId,
-                                        Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
-                                        Amount = -userCheck.DebitedAmount
-                                    };
-                                    userExpenseList.Add(userExpense);
-                                }
-                                else
-                                {
-                                    a.Amount = a.Amount - userCheck.DebitedAmount;
-                                }
-                            }
-                        }
-
-                        var check2 = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
-                        if (check2 != null)
-                        {
-                            var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount > 0).FirstOrDefaultAsync();
-                            if (userCheck != null)
-                            {
-                                var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
-                                if (a == null)
-                                {
-                                    UserExpense userExpense = new UserExpense()
+                                        UserExpense userExpense = new UserExpense()
+                                        {
+                                            Id = userCheck.UserId,
+                                            Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
+                                            Amount = -userCheck.DebitedAmount
+                                        };
+                                        userExpenseList.Add(userExpense);
+                                    }
+                                    else
                                     {
-                                        Id = userCheck.UserId,
-                                        Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
-                                        Amount = -userCheck.DebitedAmount
-                                    };
-                                    userExpenseList.Add(userExpense);
-                                }
-                                else
-                                {
-                                    a.Amount = a.Amount - userCheck.DebitedAmount;
+                                        a.Amount = a.Amount - userCheck.DebitedAmount;
+                                    }
                                 }
                             }
 
+                            var check2 = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
+                            if (check2 != null)
+                            {
+                                var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount > 0).FirstOrDefaultAsync();
+                                if (userCheck != null)
+                                {
+                                    var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
+                                    if (a == null)
+                                    {
+                                        UserExpense userExpense = new UserExpense()
+                                        {
+                                            Id = userCheck.UserId,
+                                            Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
+                                            Amount = -userCheck.DebitedAmount
+                                        };
+                                        userExpenseList.Add(userExpense);
+                                    }
+                                    else
+                                    {
+                                        a.Amount = a.Amount - userCheck.DebitedAmount;
+                                    }
+                                }
+
+                            }
                         }
+                        
                     }
                     
                 }
@@ -407,7 +415,7 @@ namespace Splitwise.Repository.ExpenseRepository
             List<Expense> settleUpList = new List<Expense>();
             foreach (var expenseId in expenseIdList)
             {
-                var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId) && e.Description.Equals("Settle-Up")).FirstOrDefaultAsync();
+                var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId) && e.Description.Equals("Settle-Up") && e.IsDeleted.Equals(false)).FirstOrDefaultAsync();
                 if (expense != null)
                 {
                     settleUpList.Add(expense);
@@ -527,6 +535,32 @@ namespace Splitwise.Repository.ExpenseRepository
                 DebitedAmount = -settleUp.Amount,
                 CreditedAmount = 0
             };
+
+            Activity activity = new Activity
+            {
+                Log = _db.Users.Where(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).FirstOrDefault() + " Paid " + _db.Users.Where(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).FirstOrDefault(),
+                ActivityOn = "Expense",
+                ActivityOnId = expense.Id
+            };
+
+            _db.Activities.Add(activity);
+
+            ActivityUser activityUser = new ActivityUser
+            {
+                Log = "you paid " + settleUp.Amount,
+                ActivityUserId = settleUp.Payer,
+                ActivityId = activity.Id
+            };
+
+            ActivityUser activityUser2 = new ActivityUser
+            {
+                Log = "you get back " + settleUp.Amount,
+                ActivityUserId = settleUp.Recipient,
+                ActivityId = activity.Id
+            };
+
+            _db.ActivityUsers.Add(activityUser);
+            _db.ActivityUsers.Add(activityUser2);
 
             _db.Ledgers.Add(ledgerPayer);
             _db.Ledgers.Add(ledgerRecipient);

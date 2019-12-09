@@ -5,6 +5,7 @@
 
   <div class="wrap-collabsible" style="width:650px; margin-top:5px">
     <input id="collapsible" class="toggle" type="checkbox">
+    <a (click)="deleteExpense(expense.expenseId)" style="cursor:pointer; color:red;">x</a>
     <label for="collapsible" class="lbl-toggle" (click)="clickExpense(expense.expenseId)">
       <div style="display:inline-block;">{{expense.createdOn.split('T')[0].split('-')[1]}}-{{expense.createdOn.split('T')[0].split('-')[0]}}<br /> {{expense.createdOn.split('T')[0].split('-')[2]}} </div>
       <span style="font-size:20px"> {{expense.description}}</span>

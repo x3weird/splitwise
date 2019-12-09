@@ -98,4 +98,15 @@ export class FriendComponent implements OnInit {
       (err: any) => { console.log(err); }
     );
   }
+
+  deleteExpense(expenseId: string) {
+    console.log("delete");
+    var check = confirm("Are you sure you want to delete expense ?");
+    if (check) {
+      this.service.deleteExpense(expenseId).subscribe(
+        (res: any) => { console.log(res); location.reload(); },
+        (err) => { console.log(err); }
+      );
+    }
+  }
 }

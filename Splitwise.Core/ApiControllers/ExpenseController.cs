@@ -50,6 +50,8 @@ namespace Splitwise.Core.ApiControllers
             return expenseDetailList;
         }
 
+        [HttpDelete]
+        [Route("{expenseId}")]
         public async Task<object> DeleteExpense(string expenseId)
         {
             int i = await _unitOfWork.Expense.DeleteExpense(expenseId);

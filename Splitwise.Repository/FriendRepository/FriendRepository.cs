@@ -190,36 +190,39 @@ namespace Splitwise.Repository.FriendRepository
             var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName }).Distinct();
             foreach (var expense in expenses)
             {
-                var ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(expense.Id));
-                var userIdLedger = ledgers.Select(l => l.UserId).Distinct();
-
-                List<ExpenseLedger> ExpenseLedgerList = new List<ExpenseLedger>();
-
-                foreach (var ledger in ledgers)
+                if (expense.IsDeleted.Equals(false))
                 {
-                    ExpenseLedger expenseLedger = new ExpenseLedger
+                    var ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(expense.Id));
+                    var userIdLedger = ledgers.Select(l => l.UserId).Distinct();
+
+                    List<ExpenseLedger> ExpenseLedgerList = new List<ExpenseLedger>();
+
+                    foreach (var ledger in ledgers)
                     {
-                        UserId = ledger.UserId,
-                        Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
-                        Paid = ledger.CreditedAmount,
-                        Owes = ledger.DebitedAmount
+                        ExpenseLedger expenseLedger = new ExpenseLedger
+                        {
+                            UserId = ledger.UserId,
+                            Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
+                            Paid = ledger.CreditedAmount,
+                            Owes = ledger.DebitedAmount
+                        };
+                        ExpenseLedgerList.Add(expenseLedger);
+                    }
+
+                    ExpenseDetail expenseDetail = new ExpenseDetail
+                    {
+                        ExpenseLedgers = ExpenseLedgerList,
+                        AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
+                        Amount = expense.Amount,
+                        ExpenseId = expense.Id,
+                        CreatedOn = expense.CreatedOn,
+                        ExpenseType = expense.ExpenseType,
+                        Note = expense.Note,
+                        Description = expense.Description
                     };
-                    ExpenseLedgerList.Add(expenseLedger);
+
+                    ExpenseDetailList.Add(expenseDetail);
                 }
-
-                ExpenseDetail expenseDetail = new ExpenseDetail
-                {
-                    ExpenseLedgers = ExpenseLedgerList,
-                    AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
-                    Amount = expense.Amount,
-                    ExpenseId = expense.Id,
-                    CreatedOn = expense.CreatedOn,
-                    ExpenseType = expense.ExpenseType,
-                    Note = expense.Note,
-                    Description = expense.Description
-                };
-
-                ExpenseDetailList.Add(expenseDetail);
             }
 
             return ExpenseDetailList;
