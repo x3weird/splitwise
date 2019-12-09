@@ -1,3 +1,4 @@
+using AutoMapper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -88,6 +89,8 @@ namespace Splitwise.Web
                     ClockSkew = TimeSpan.Zero
                 };
             });
+
+            services.AddAutoMapper(typeof(Startup));
 
             services.AddMvc(config =>
             {
