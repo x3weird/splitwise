@@ -21,8 +21,12 @@ namespace Splitwise.Repository.ExpenseRepository
         }
         public async Task<List<ExpenseDetail>> GetExpenseList(string email)
         {
+            //current user
             var user = await _userManager.FindByEmailAsync(email);
+
+            //list of all expense which is related to current user
             var expenseIdList = _db.Ledgers.Where(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
+
             var expenses = _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
             var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName}).Distinct();

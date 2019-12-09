@@ -243,7 +243,7 @@ namespace Splitwise.Repository.FriendRepository
             }
             UserExpense userExpense = new UserExpense()
             {
-                Name = _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).Single(),
+                Name = _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleOrDefault(),
                 Amount = sum,
                 Id = userId
             };
