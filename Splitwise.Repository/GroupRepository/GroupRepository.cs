@@ -191,14 +191,11 @@ namespace Splitwise.Repository.GroupRepository
 
         public async Task<List<UserExpense>> GroupUserExpense(string groupId, List<string> users)
         {
-            //var query = _db.Expenses.Where(e => e.GroupId.Equals(groupId)); //changes
+            
             List<string> ledgerIdList = new List<string>();
             List<UserExpense> userExpenses = new List<UserExpense>();
             List<Ledger> ledgers = new List<Ledger>();
-            //foreach (var x in query)  //changes
-            //{
-            //    ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(x.Id)).ToList();
-            //}
+        
 
             foreach (var userId in users)
             {
