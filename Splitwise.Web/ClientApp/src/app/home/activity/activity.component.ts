@@ -8,15 +8,35 @@ import { UserService } from 'src/app/shared/user.service';
 })
 export class ActivityComponent implements OnInit {
 
-  activities
+  activities: any;
 
   constructor(private service: UserService) { }
 
   ngOnInit() {
     this.service.getActivities().subscribe(
-      (res: any) => { console.log(res); this.activities = res; },
+      (res: any) => {
+        console.log(res);
+        res.sort(this.sortFunction);
+        this.activities = res;
+
+      },
       (err) => { console.log(err); }
     );
   }
+
+  unDeleteExpense(expenseId: string) {
+    this.service.unDeleteExpense(expenseId).subscribe(
+      (res: any) => { console.log(res); },
+      (err) => { console.log(err); }
+    );
+
+
+  }
+
+  sortFunction(a, b) {
+    var dateA = new Date(a.date).getTime();
+    var dateB = new Date(b.date).getTime();
+    return dateA > dateB ? -1 : 1;
+  };
 
 }

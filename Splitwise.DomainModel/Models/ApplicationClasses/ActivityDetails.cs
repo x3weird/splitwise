@@ -13,6 +13,7 @@ namespace Splitwise.DomainModel.Models
         public string ActivityOn { get; set; }
         public string ActivityOnId { get; set; }
         public string Log2 { get; set; }
+        public DateTime Date { get; set; }
 
         #endregion
     }

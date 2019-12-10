@@ -1,5 +1,5 @@
 <div style="display: flex; margin-top: 20px;">
-  <h2>Groups</h2>  <button style="margin-left: 110px;" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#modalExpenseForm">Add an Expense</button>  <button style="margin-left: 20px;" class="btn btn-primary btn-rounded mb-4" data-toggle="modal" data-target="#modalSettleUpForm">Settle Up</button>
+  <h2>Groups</h2>  
 </div>
 <ng-container *ngFor="let expense of expenses; index as i">
 
@@ -18,7 +18,6 @@
         <div>
           {{expense.description}} <br /> <b>₹{{expense.amount}}</b> <br /> Added by {{expense.addedBy}} on {{expense.createdOn.split('T')[0]}}
         </div>
-        <!--<button class="btn btn-primary btn-sm">Edit Expense</button>-->
         <hr />
         <div class="row">
           <div class="col-md-6" *ngIf="expense.expenseType !='Settle-Up'">

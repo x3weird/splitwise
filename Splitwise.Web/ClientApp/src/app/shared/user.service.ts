@@ -116,4 +116,12 @@ export class UserService {
   deleteExpense(expenseId: string) {
     return this.http.delete(this.BaseURL + "/expenses/" + expenseId);
   }
+
+  unDeleteExpense(expenseId: string) {
+    return this.http.get(this.BaseURL + "/expenses/unDelete/" + expenseId);
+  }
+
+  getEditExpense(expenseId: string) {
+    return this.http.get(this.BaseURL + "/expenses/editExpense/" + expenseId);
+  }
 }

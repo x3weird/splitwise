@@ -54,7 +54,9 @@ namespace Splitwise.Core.ApiControllers
         [Route("{expenseId}")]
         public async Task<object> DeleteExpense(string expenseId)
         {
-            int i = await _unitOfWork.Expense.DeleteExpense(expenseId);
+            var claimsIdentity = this.User.Identity as ClaimsIdentity;
+            var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            int i = await _unitOfWork.Expense.DeleteExpense(expenseId, currentUserId);
             if (i == 1)
             {
                 return Ok();
@@ -73,6 +75,16 @@ namespace Splitwise.Core.ApiControllers
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
             return await _unitOfWork.Expense.Dashboard(email);
+        }
+
+        [HttpGet]
+        [Route("unDelete/{expenseId}")]
+        public async Task<object> UnDeleteExpense(string expenseId)
+        {
+            var claimsIdentity = this.User.Identity as ClaimsIdentity;
+            var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            await _unitOfWork.Expense.UnDeleteExpense(expenseId, currentUserId);
+            return Ok();
         }
     }
 }

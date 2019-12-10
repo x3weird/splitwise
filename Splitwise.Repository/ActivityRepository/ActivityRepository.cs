@@ -22,8 +22,9 @@ namespace Splitwise.Repository.ActivityRepository
             List<ActivityDetails> activityDetails = new List<ActivityDetails>();
             foreach (var activities in _db.Activities)
             {
-                var activityLog = _db.ActivityUsers.Where(a => a.ActivityId.Equals(activities.Id) && a.ActivityUserId.Equals(userId));
-                if (activityLog != null)
+                var activityLog = _db.ActivityUsers.Where(a => a.ActivityId.Equals(activities.Id) && a.ActivityUserId.Equals(userId)).ToList();
+                
+                if (activityLog.FirstOrDefault() != null)
                 {
                     foreach (var activityUsers in activityLog)
                     {
@@ -33,7 +34,8 @@ namespace Splitwise.Repository.ActivityRepository
                             Log = activities.Log,
                             ActivityOn = activities.ActivityOn,
                             ActivityOnId = activities.ActivityOnId,
-                            Log2 = activityUsers.Log
+                            Log2 = activityUsers.Log,
+                            Date = activities.Date
                         };
                         activityDetails.Add(activityDetail);
                         await _db.SaveChangesAsync();
@@ -46,6 +48,7 @@ namespace Splitwise.Repository.ActivityRepository
                         Log = activities.Log,
                         ActivityOn = activities.ActivityOn,
                         ActivityOnId = activities.ActivityOnId,
+                        Date = activities.Date
                     };
                     activityDetails.Add(activityDetail);
                 }

@@ -133,39 +133,6 @@ namespace Splitwise.Repository.GroupRepository
             }
         }
 
-        public async Task<int> EditGroup(string groupId, GroupAdd groupAdd)
-        {
-            Group gp = _db.Groups.Where(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefault();
-
-            if ((gp != null) && (groupAdd.Users != null))
-            {
-                gp.Name = groupAdd.Name;
-                gp.AddedBy = groupAdd.AddedBy;
-                gp.CreatedOn = groupAdd.CreatedOn;
-                gp.IsDeleted = false;
-                gp.SimplifyDebts = groupAdd.SimplifyDebts;
-
-                _db.GroupMembers.RemoveRange(_db.GroupMembers.Where(g => g.GroupId.Equals(groupId)));
-                foreach (var userId in groupAdd.Users)
-                {
-
-                    GroupMember groupMember = new GroupMember
-                    {
-                        GroupId = groupId,
-                        //UserId = 
-                    };
-                    _db.GroupMembers.Add(groupMember);
-
-                }
-                await _db.SaveChangesAsync();
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
-        }
-
         public async Task<GroupDetails> GetGroupDetails(string groupId)
         {
             Group gp = _db.Groups.Where(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefault();

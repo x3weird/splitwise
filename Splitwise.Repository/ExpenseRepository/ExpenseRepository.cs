@@ -29,7 +29,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
             var expenses = _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
-            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName}).Distinct();
+            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName}).Distinct();
             foreach (var expense in expenses)
             {
                 if (expense.IsDeleted == false)
@@ -74,7 +74,7 @@ namespace Splitwise.Repository.ExpenseRepository
             return ExpenseDetailList;
         }
 
-        public async Task<int> DeleteExpense(string expenseId)
+        public async Task<int> DeleteExpense(string expenseId, string currentUserId)
         {
             var expense = _db.Expenses.Where(e => e.Id.Equals(expenseId)).FirstOrDefault();
             if (expense == null)
@@ -84,9 +84,22 @@ namespace Splitwise.Repository.ExpenseRepository
             else
             {
                 expense.IsDeleted = true;
+                
+                var group = _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId)).FirstOrDefault();
+                Activity activity = new Activity
+                {
+                    Log = _db.Users.Where(u=>u.Id.Equals(currentUserId)).Select(s=>s.FirstName).FirstOrDefault() + " deleted " + expense.Description,
+                    ActivityOn = group == null?"Expense":"Group",
+                    ActivityOnId = group == null ? expense.Id : group.GroupId,
+                    Date = DateTime.Now
+                };
+
+                _db.Activities.Add(activity);
                 await _db.SaveChangesAsync();
                 return 1;
             }
+
+            
 
         }
 
@@ -166,19 +179,13 @@ namespace Splitwise.Repository.ExpenseRepository
 
             if (addExpense.GroupId != "")
             {
-                //Activity activity = new Activity()
-                //{
-                //    Log = _db.Users.Where(u => u.Email.ToLower().Equals(addExpense.AddedBy.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " added " + addExpense.Description,
-                //    ActivityOn = "Expense",
-                //    ActivityOnId = expense.Id
-                //};
-                //_db.Activities.Add(activity);
-
+              
                 Activity activityVar = new Activity()
                 {
                     Log = _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefault() + " added " + addExpense.Description + " in " + _db.Groups.Where(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).FirstOrDefault(),
                     ActivityOn = "Group",
-                    ActivityOnId = addExpense.GroupId
+                    ActivityOnId = addExpense.GroupId,
+                    Date = DateTime.Now
                 };
                 _db.Activities.Add(activityVar);
 
@@ -194,7 +201,8 @@ namespace Splitwise.Repository.ExpenseRepository
             {
                 Log = _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefault() + " added " + addExpense.Description,
                 ActivityOn = "Expense",
-                ActivityOnId = expense.Id
+                ActivityOnId = expense.Id,
+                Date = DateTime.Now
             };
             _db.Activities.Add(activity);
 
@@ -252,92 +260,6 @@ namespace Splitwise.Repository.ExpenseRepository
                 _db.Ledgers.Add(ledger);
                 _db.SaveChanges();
             }
-        }
-
-        public async Task<AddExpense> EditExpense(string expenseId)
-        {
-            Expense expense = _db.Expenses.Where(e => e.Id.Equals(expenseId)).FirstOrDefault();
-            List<UserExpense> paidBy = new List<UserExpense>();
-            List<UserExpense> ledgerList = new List<UserExpense>();
-            AddExpense addExpense = new AddExpense()
-            {
-                AddedBy = expense.AddedBy,
-                CreatedOn = expense.CreatedOn,
-                Description = expense.Description,
-                ExpenseType = expense.ExpenseType,
-                //GroupId = expense.GroupId, //changes
-                Note = expense.Note,
-                Amount = 0
-            };
-
-            foreach (var l in _db.Ledgers.Where(l => (l.CreditedAmount > 0) && l.ExpenseId.Equals(expenseId)))
-            {
-                addExpense.Amount = +l.CreditedAmount;
-                UserExpense userExpense = new UserExpense()
-                {
-                    Id = l.UserId,
-                    Amount = l.CreditedAmount,
-                    Name = _db.Users.Where(u => u.Id.Equals(l.UserId)).Select(u => u.FirstName).FirstOrDefault()
-                };
-                paidBy.Add(userExpense);
-            }
-
-            foreach (var l in _db.Ledgers.Where(l => (l.DebitedAmount > 0) && l.ExpenseId.Equals(expenseId)))
-            {
-                UserExpense userExpense = new UserExpense()
-                {
-                    Id = l.UserId,
-                    Amount = l.DebitedAmount,
-                    Name = _db.Users.Where(u => u.Id.Equals(l.UserId)).Select(u => u.FirstName).FirstOrDefault()
-                };
-                ledgerList.Add(userExpense);
-            }
-            //addExpense.PaidBy = paidBy; //changes
-            //addExpense.Ledger = ledgerList;  //changes
-            await _db.SaveChangesAsync();
-            return addExpense;
-        }
-
-        public async Task<int> EditExpense(AddExpense addExpense)
-        {
-            Expense expense = new Expense()
-            {
-                AddedBy = addExpense.AddedBy,
-                CreatedOn = addExpense.CreatedOn,
-                Description = addExpense.Description,
-                ExpenseType = addExpense.ExpenseType,
-                //GroupId = addExpense.GroupId,  //changes
-                IsDeleted = false,
-                Note = addExpense.Note,
-                Amount = 0
-            };
-            foreach (var e in addExpense.PaidBy)
-            {
-                expense.Amount = +e.Amount;
-                var entity = _db.Expenses.Attach(expense);
-                entity.State = EntityState.Modified;
-                Ledger ledger = new Ledger()
-                {
-                    //UserId = e.Id,  //changes
-                    CreditedAmount = e.Amount,
-                    ExpenseId = expense.Id
-                };
-                var entity2 = _db.Ledgers.Attach(ledger);
-                entity2.State = EntityState.Modified;
-            }
-            foreach (var e in addExpense.Ledger)
-            {
-                Ledger ledger = new Ledger()
-                {
-                    //UserId = e.Id,  //changes
-                    DebitedAmount = e.Amount,
-                    ExpenseId = expense.Id
-                };
-                var entity = _db.Ledgers.Attach(ledger);
-                entity.State = EntityState.Modified;
-            }
-            await _db.SaveChangesAsync();
-            return 1;
         }
 
         public async Task<List<UserExpense>> Dashboard(string email)
@@ -540,7 +462,8 @@ namespace Splitwise.Repository.ExpenseRepository
             {
                 Log = _db.Users.Where(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).FirstOrDefault() + " Paid " + _db.Users.Where(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).FirstOrDefault(),
                 ActivityOn = "Expense",
-                ActivityOnId = expense.Id
+                ActivityOnId = expense.Id,
+                Date = DateTime.Now
             };
 
             _db.Activities.Add(activity);
@@ -566,6 +489,28 @@ namespace Splitwise.Repository.ExpenseRepository
             _db.Ledgers.Add(ledgerRecipient);
             await _db.SaveChangesAsync();
 
+        }
+
+        public async Task UnDeleteExpense(string expenseId, string currentUserId)
+        {
+            var expense = _db.Expenses.Where(e => e.Id.Equals(expenseId)).FirstOrDefault();
+            if(expense!=null)
+            {
+                expense.IsDeleted = false;
+            }
+
+            var group = _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId)).FirstOrDefault();
+            Activity activity = new Activity
+            {
+                Log = _db.Users.Where(u => u.Id.Equals(currentUserId)).Select(s => s.FirstName).FirstOrDefault() + " unDeleted " + expense.Description,
+                ActivityOn = group == null ? "Expense" : "Group",
+                ActivityOnId = group == null ? expense.Id : group.GroupId,
+                Date = DateTime.Now
+            };
+
+            _db.Activities.Add(activity);
+
+            await _db.SaveChangesAsync();
         }
     }
 }

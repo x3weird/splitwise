@@ -2,8 +2,12 @@
   <h2>Recent Activity</h2> 
 </div>
 <div class="card" *ngFor="let activity of activities">
-  <div class="card-body" >
+  <div class="card-body" *ngIf="activity.log.split(' ')[1]!='deleted'">
     <h5 class="card-title">{{activity.log}}</h5>
+    <p class="card-text">{{activity.log2}}</p>
+  </div>
+  <div class="card-body" *ngIf="activity.log.split(' ')[1]=='deleted'">
+    <h5 class="card-title">{{activity.log}} <button (click)="unDeleteExpense(activity.activityOnId)" style="float:right;" class="btn btn-danger">Undelete</button></h5>
     <p class="card-text">{{activity.log2}}</p>
   </div>
 </div>

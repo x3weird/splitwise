@@ -18,7 +18,8 @@ namespace Splitwise.DomainModel.Models
         public string ActivityOn { get; set; }
         [Required]
         public string ActivityOnId { get; set; }
-
+        [Required]
+        public DateTime Date { get; set; }
         #endregion
     }
 }

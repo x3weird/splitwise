@@ -53,21 +53,7 @@ namespace Splitwise.Core.ApiControllers
             }
         }
 
-        [HttpPut]
-        [Route("{groupId}/edit")]
-        public async Task<object> EditGroup(string groupId, GroupAdd groupAdd)
-        {
-            if (await _unitOfWork.Group.EditGroup(groupId, groupAdd) == 1)
-            {
-                await _unitOfWork.Commit();
-                return Ok();
-            }
-            else
-            {
-                return Conflict();
-
-            }
-        }
+       
 
         [HttpGet]
         [Route("{groupId}/edit")]
