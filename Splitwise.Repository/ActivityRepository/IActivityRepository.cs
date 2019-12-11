@@ -9,6 +9,5 @@ namespace Splitwise.Repository.ActivityRepository
     public interface IActivityRepository
     {
         Task<List<ActivityDetails>> ActivityList(string userId);
-        Task<int> DeleteActivity(string activityId);
     }
 }

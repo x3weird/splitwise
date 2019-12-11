@@ -1,4 +1,5 @@
-﻿using Splitwise.DomainModel.Models;
+﻿using AutoMapper;
+using Splitwise.DomainModel.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,12 @@ namespace Splitwise.Repository.ActivityRepository
     public class ActivityRepository : IActivityRepository
     {
         private readonly SplitwiseDbContext _db;
+        private readonly IMapper _mapper;
 
-        public ActivityRepository(SplitwiseDbContext db)
+        public ActivityRepository(SplitwiseDbContext db, IMapper mapper)
         {
             _db = db;
+            _mapper = mapper;
         }
 
         public async Task<List<ActivityDetails>> ActivityList(string userId)
@@ -28,48 +31,19 @@ namespace Splitwise.Repository.ActivityRepository
                 {
                     foreach (var activityUsers in activityLog)
                     {
-                        ActivityDetails activityDetail = new ActivityDetails
-                        {
-                            Id = activities.Id,
-                            Log = activities.Log,
-                            ActivityOn = activities.ActivityOn,
-                            ActivityOnId = activities.ActivityOnId,
-                            Log2 = activityUsers.Log,
-                            Date = activities.Date
-                        };
+                        ActivityDetails activityDetail = _mapper.Map<ActivityDetails>(activities);
+                        activityDetail.Log2 = activityUsers.Log;
                         activityDetails.Add(activityDetail);
                         await _db.SaveChangesAsync();
                     }
                 } else
                 {
-                    ActivityDetails activityDetail = new ActivityDetails
-                    {
-                        Id = activities.Id,
-                        Log = activities.Log,
-                        ActivityOn = activities.ActivityOn,
-                        ActivityOnId = activities.ActivityOnId,
-                        Date = activities.Date
-                    };
+                    ActivityDetails activityDetail = _mapper.Map<ActivityDetails>(activities);
                     activityDetails.Add(activityDetail);
                 }
                 
             }
             return activityDetails;
-        }
-
-        public async Task<int> DeleteActivity(string activityId)
-        {
-            var activity = _db.Activities.Where(a => a.Id.Equals(activityId)).FirstOrDefault();
-            if (activity != null)
-            {
-                _db.Activities.Remove(activity);
-                await _db.SaveChangesAsync();
-                return 1;
-            }
-            else
-            {
-                return 0;
-            }
         }
     }
 }

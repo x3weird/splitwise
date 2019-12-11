@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Splitwise.DomainModel.Models;
 using System;
@@ -13,11 +14,13 @@ namespace Splitwise.Repository.ExpenseRepository
     {
         private readonly SplitwiseDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMapper _mapper;
 
-        public ExpenseRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager)
+        public ExpenseRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _db = db;
             _userManager = userManager;
+            _mapper = mapper;
         }
         public async Task<List<ExpenseDetail>> GetExpenseList(string email)
         {
@@ -41,30 +44,39 @@ namespace Splitwise.Repository.ExpenseRepository
 
                     foreach (var ledger in ledgers)
                     {
-                        ExpenseLedger expenseLedger = new ExpenseLedger
-                        {
-                            UserId = ledger.UserId,
-                            Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
-                            Paid = ledger.CreditedAmount,
-                            Owes = ledger.DebitedAmount
-                        };
+                        //ExpenseLedger expenseLedger = new ExpenseLedger
+                        //{
+                        //    UserId = ledger.UserId, 
+                        //    Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
+                        //    Paid = ledger.CreditedAmount,
+                        //    Owes = ledger.DebitedAmount
+                        //};
+
+                        ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
+                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault();
+
                         ExpenseLedgerList.Add(expenseLedger);
                     }
 
                     var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).Select(s => s.CommentData).ToListAsync();
 
-                    ExpenseDetail expenseDetail = new ExpenseDetail
-                    {
-                        ExpenseLedgers = ExpenseLedgerList,
-                        AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
-                        Amount = expense.Amount,
-                        ExpenseId = expense.Id,
-                        CreatedOn = expense.CreatedOn,
-                        ExpenseType = expense.ExpenseType,
-                        Note = expense.Note,
-                        Description = expense.Description,
-                        Comments = commentList
-                    };
+                    //ExpenseDetail expenseDetail = new ExpenseDetail
+                    //{
+                    //    ExpenseLedgers = ExpenseLedgerList,
+                    //    AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
+                    //    Amount = expense.Amount,
+                    //    ExpenseId = expense.Id,
+                    //    CreatedOn = expense.CreatedOn,
+                    //    ExpenseType = expense.ExpenseType,
+                    //    Note = expense.Note,
+                    //    Description = expense.Description,
+                    //    Comments = commentList
+                    //};
+
+                    ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
+                    expenseDetail.AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();
+                    expenseDetail.ExpenseLedgers = ExpenseLedgerList;
+                    expenseDetail.Comments = commentList;
 
                     ExpenseDetailList.Add(expenseDetail);
                 }
@@ -164,16 +176,18 @@ namespace Splitwise.Repository.ExpenseRepository
                 _db.SaveChanges();
             }
 
-            Expense expense = new Expense()
-            {
-                AddedBy = addExpense.AddedBy,
-                CreatedOn = addExpense.CreatedOn,
-                Description = addExpense.Description,
-                ExpenseType = addExpense.ExpenseType,
-                IsDeleted = false,
-                Note = addExpense.Note,
-                Amount = addExpense.Amount
-            };
+            //Expense expense = new Expense()
+            //{
+            //    AddedBy = addExpense.AddedBy,
+            //    CreatedOn = addExpense.CreatedOn,
+            //    Description = addExpense.Description,
+            //    ExpenseType = addExpense.ExpenseType,
+            //    IsDeleted = false,
+            //    Note = addExpense.Note,
+            //    Amount = addExpense.Amount
+            //};
+
+            Expense expense = _mapper.Map<Expense>(addExpense);
 
             var addedExpense = _db.Expenses.Add(expense);
 
@@ -238,21 +252,31 @@ namespace Splitwise.Repository.ExpenseRepository
                 ledger.UserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault();
                 if (ledger.DebitedAmount > 0)
                 {
-                    ActivityUser activityUser = new ActivityUser()
-                    {
-                        Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " gets back ₹" + ledger.DebitedAmount,
-                        ActivityId = activity.Id,
-                        ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
-                    };
+                    //ActivityUser activityUser = new ActivityUser()
+                    //{
+                    //    Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " gets back ₹" + ledger.DebitedAmount,
+                    //    ActivityId = activity.Id,
+                    //    ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
+                    //};
+
+                    ActivityUser activityUser = _mapper.Map<ActivityUser>(activity);
+                    activityUser.Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " gets back ₹" + ledger.DebitedAmount;
+                    activityUser.ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault();
+
                     _db.ActivityUsers.Add(activityUser);
                 } else
                 {
-                    ActivityUser activityUser = new ActivityUser()
-                    {
-                        Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " owe ₹" + ledger.DebitedAmount,
-                        ActivityId = activity.Id,
-                        ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
-                    };
+                    //ActivityUser activityUser = new ActivityUser()
+                    //{
+                    //    Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " owe ₹" + ledger.DebitedAmount,
+                    //    ActivityId = activity.Id,
+                    //    ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
+                    //};
+
+                    ActivityUser activityUser = _mapper.Map<ActivityUser>(activity);
+                    activityUser.Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " owe ₹" + ledger.DebitedAmount;
+                    activityUser.ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault();
+
                     _db.ActivityUsers.Add(activityUser);
                 }
                 
@@ -267,7 +291,6 @@ namespace Splitwise.Repository.ExpenseRepository
             string currentUserId = _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).Single();
             var expenseIdList = _db.Ledgers.Where(l => l.UserId.Equals(currentUserId)).Select(s => s.ExpenseId).Distinct().ToList();
             var userIdList = await _db.Ledgers.Join(expenseIdList, l => l.ExpenseId, e => e, (l, e) => new { userId = l.UserId }).Distinct().ToListAsync();
-
 
             List<UserExpense> userExpenseList = new List<UserExpense>();
             
@@ -289,12 +312,16 @@ namespace Splitwise.Repository.ExpenseRepository
                                     var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
                                     if (a == null)
                                     {
-                                        UserExpense userExpense = new UserExpense()
-                                        {
-                                            Id = userCheck.UserId,
-                                            Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
-                                            Amount = -userCheck.DebitedAmount
-                                        };
+                                        //UserExpense userExpense = new UserExpense()
+                                        //{
+                                        //    Id = userCheck.UserId,
+                                        //    Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
+                                        //    Amount = -userCheck.DebitedAmount
+                                        //};
+
+                                        UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
+                                        userExpense.Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault();
+
                                         userExpenseList.Add(userExpense);
                                     }
                                     else
@@ -313,12 +340,16 @@ namespace Splitwise.Repository.ExpenseRepository
                                     var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
                                     if (a == null)
                                     {
-                                        UserExpense userExpense = new UserExpense()
-                                        {
-                                            Id = userCheck.UserId,
-                                            Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
-                                            Amount = -userCheck.DebitedAmount
-                                        };
+                                        //UserExpense userExpense = new UserExpense()
+                                        //{
+                                        //    Id = userCheck.UserId,
+                                        //    Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
+                                        //    Amount = -userCheck.DebitedAmount
+                                        //};
+
+                                        UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
+                                        userExpense.Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault();
+
                                         userExpenseList.Add(userExpense);
                                     }
                                     else
@@ -359,12 +390,16 @@ namespace Splitwise.Repository.ExpenseRepository
                             var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
                             if (a == null)
                             {
-                                UserExpense userExpense = new UserExpense()
-                                {
-                                    Id = userCheck.UserId,
-                                    Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
-                                    Amount = -userCheck.DebitedAmount
-                                };
+                                //UserExpense userExpense = new UserExpense()
+                                //{
+                                //    Id = userCheck.UserId,
+                                //    Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
+                                //    Amount = -userCheck.DebitedAmount
+                                //};
+
+                                UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
+                                userExpense.Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault();
+
                                 userExpenseList.Add(userExpense);
                             }
                             else
@@ -383,12 +418,16 @@ namespace Splitwise.Repository.ExpenseRepository
                             var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
                             if (a == null)
                             {
-                                UserExpense userExpense = new UserExpense()
-                                {
-                                    Id = userCheck.UserId,
-                                    Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
-                                    Amount = -userCheck.DebitedAmount
-                                };
+                                //UserExpense userExpense = new UserExpense()
+                                //{
+                                //    Id = userCheck.UserId,
+                                //    Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
+                                //    Amount = -userCheck.DebitedAmount
+                                //};
+
+                                UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
+                                userExpense.Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault();
+
                                 userExpenseList.Add(userExpense);
                             }
                             else
@@ -410,16 +449,18 @@ namespace Splitwise.Repository.ExpenseRepository
         {
             string AddedBy = _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).FirstOrDefault();
 
-            Expense expense = new Expense()
-            {
-                AddedBy = AddedBy,
-                CreatedOn = settleUp.Date,
-                Description = "Settle-Up",
-                ExpenseType = "Settle-Up",
-                IsDeleted = false,
-                Note = settleUp.Note,
-                Amount = settleUp.Amount
-            };
+            //Expense expense = new Expense()
+            //{
+            //    AddedBy = AddedBy,
+            //    CreatedOn = settleUp.Date,
+            //    Description = "Settle-Up",
+            //    ExpenseType = "Settle-Up",
+            //    IsDeleted = false,
+            //    Note = settleUp.Note,
+            //    Amount = settleUp.Amount
+            //};
+
+            Expense expense = _mapper.Map<Expense>(settleUp);
 
             var addedExpense = _db.Expenses.Add(expense);
             await _db.SaveChangesAsync();

@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using AutoMapper;
+using Microsoft.AspNetCore.Identity;
 using Splitwise.DomainModel.Models;
 using System;
 using System.Collections.Generic;
@@ -16,11 +17,13 @@ namespace Splitwise.Repository.FriendRepository
     {
         private readonly SplitwiseDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMapper _mapper;
 
-        public FriendRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager)
+        public FriendRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _db = db;
             _userManager = userManager;
+            _mapper = mapper;
         }
         public async Task<List<UserNameWithId>> GetFriendList(string userId)
         {
@@ -46,6 +49,7 @@ namespace Splitwise.Repository.FriendRepository
                                                         userId = f,
                                                         name = u.FirstName
                                                     });
+
             foreach (var friend in friendListWithName)
             {
                 UserNameWithId friendListItem = new UserNameWithId
@@ -199,27 +203,35 @@ namespace Splitwise.Repository.FriendRepository
 
                     foreach (var ledger in ledgers)
                     {
-                        ExpenseLedger expenseLedger = new ExpenseLedger
-                        {
-                            UserId = ledger.UserId,
-                            Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
-                            Paid = ledger.CreditedAmount,
-                            Owes = ledger.DebitedAmount
-                        };
+                        //ExpenseLedger expenseLedger = new ExpenseLedger
+                        //{
+                        //    UserId = ledger.UserId,
+                        //    Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
+                        //    Paid = ledger.CreditedAmount,
+                        //    Owes = ledger.DebitedAmount
+                        //};
+
+                        ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
+                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault();
+
                         ExpenseLedgerList.Add(expenseLedger);
                     }
 
-                    ExpenseDetail expenseDetail = new ExpenseDetail
-                    {
-                        ExpenseLedgers = ExpenseLedgerList,
-                        AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
-                        Amount = expense.Amount,
-                        ExpenseId = expense.Id,
-                        CreatedOn = expense.CreatedOn,
-                        ExpenseType = expense.ExpenseType,
-                        Note = expense.Note,
-                        Description = expense.Description
-                    };
+                    //ExpenseDetail expenseDetail = new ExpenseDetail
+                    //{
+                    //    ExpenseLedgers = ExpenseLedgerList,
+                    //    AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
+                    //    Amount = expense.Amount,
+                    //    ExpenseId = expense.Id,
+                    //    CreatedOn = expense.CreatedOn,
+                    //    ExpenseType = expense.ExpenseType,
+                    //    Note = expense.Note,
+                    //    Description = expense.Description
+                    //};
+
+                    ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
+                    expenseDetail.AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();
+                    expenseDetail.ExpenseLedgers = ExpenseLedgerList;
 
                     ExpenseDetailList.Add(expenseDetail);
                 }

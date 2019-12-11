@@ -90,7 +90,15 @@ namespace Splitwise.Web
                 };
             });
 
-            services.AddAutoMapper(typeof(Startup));
+
+            //AutoMapper
+            var mappingConfig = new MapperConfiguration(mc =>
+            {
+                mc.AddProfile(new MappingProfile());
+            });
+
+            IMapper mapper = mappingConfig.CreateMapper();
+            services.AddSingleton(mapper);
 
             services.AddMvc(config =>
             {

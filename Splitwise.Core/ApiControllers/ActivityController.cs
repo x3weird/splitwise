@@ -29,17 +29,5 @@ namespace Splitwise.Core.ApiControllers
             return Ok(activitiesList);
         }
 
-        [HttpDelete]
-        public async Task<object> DeleteActivity(string activityId)
-        {
-            if (await _unitOfWork.Activity.DeleteActivity(activityId) == 1)
-            {
-                return Ok();
-            }
-            else
-            {
-                return NoContent();
-            }
-        }
     }
 }

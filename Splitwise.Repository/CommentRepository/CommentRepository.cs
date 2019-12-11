@@ -1,4 +1,5 @@
-﻿using Splitwise.DomainModel.Models;
+﻿using AutoMapper;
+using Splitwise.DomainModel.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,20 +11,19 @@ namespace Splitwise.Repository.CommentRepository
     public class CommentRepository : ICommentRepository
     {
         private readonly SplitwiseDbContext _db;
+        private readonly IMapper _mapper;
 
-        public CommentRepository(SplitwiseDbContext db)
+        public CommentRepository(SplitwiseDbContext db, IMapper mapper)
         {
             _db = db;
+            _mapper = mapper;
         }
         public async Task AddComment(CommentData commentData,string currentUserId)
         {
-            Comment comment = new Comment()
-            {
-                CommentData = commentData.Content,
-                ExpenseId = commentData.ExpenseId,
-                UserId = currentUserId,
-                CreatedOn = DateTime.Now
-            };
+
+            Comment comment = _mapper.Map<Comment>(commentData);
+            comment.UserId = currentUserId;
+
             await _db.Comments.AddAsync(comment);
         }
 

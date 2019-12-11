@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Splitwise.DomainModel.Models;
@@ -13,11 +14,13 @@ namespace Splitwise.Repository.GroupRepository
     {
         private readonly SplitwiseDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IMapper _mapper;
 
-        public GroupRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager)
+        public GroupRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper)
         {
             _db = db;
             _userManager = userManager;
+            _mapper = mapper;
         }
 
         public async Task<List<UserNameWithId>> GetGroupList()
@@ -37,14 +40,16 @@ namespace Splitwise.Repository.GroupRepository
             var query = _db.Groups.Where(g => g.Name.Equals(groupAdd.Name)).SingleOrDefault();
             if (query == null)
             {
-                Group group = new Group
-                {
-                    Name = groupAdd.Name,
-                    AddedBy = currentUserId,
-                    CreatedOn = DateTime.Now,
-                    SimplifyDebts = groupAdd.SimplifyDebts,
-                    IsDeleted = false
-                };
+                //Group group = new Group
+                //{
+                //    Name = groupAdd.Name,
+                //    AddedBy = currentUserId,
+                //    CreatedOn = DateTime.Now,
+                //    SimplifyDebts = groupAdd.SimplifyDebts,
+                //    IsDeleted = false
+                //};
+
+                Group group = _mapper.Map<Group>(groupAdd);
 
                 _db.Groups.Add(group);
                 await _db.SaveChangesAsync();
@@ -162,24 +167,28 @@ namespace Splitwise.Repository.GroupRepository
 
                 foreach (var q in query)
                 {
-                    GroupUsers groupUsers = new GroupUsers
-                    {
-                        //Id = q.Id,
-                        Name = q.name,
-                        Email = q.email
-                    };
+                    //GroupUsers groupUsers = new GroupUsers
+                    //{
+                    //    Name = q.name,
+                    //    Email = q.email
+                    //};
+
+                    GroupUsers groupUsers = _mapper.Map<GroupUsers>(q);
+
                     groupUsersList.Add(groupUsers);
                 }
 
-                GroupDetails groupDetails = new GroupDetails
-                {
-                    GroupId = groupId,
-                    GroupName = gp.Name,
-                    AddedBy = gp.AddedBy,
-                    CreatedOn = gp.CreatedOn,
-                    SimplifyDebts = gp.SimplifyDebts,
-                    Users = groupUsersList
-                };
+                //GroupDetails groupDetails = new GroupDetails
+                //{
+                //    GroupId = groupId,
+                //    GroupName = gp.Name,
+                //    AddedBy = gp.AddedBy,
+                //    CreatedOn = gp.CreatedOn,
+                //    SimplifyDebts = gp.SimplifyDebts,
+                //    Users = groupUsersList
+                //};
+
+                GroupDetails groupDetails = _mapper.Map<GroupDetails>(gp);
 
                 return groupDetails;
             }
@@ -246,28 +255,36 @@ namespace Splitwise.Repository.GroupRepository
 
                     foreach (var ledger in ledgers)
                     {
-                        ExpenseLedger expenseLedger = new ExpenseLedger
-                        {
-                            UserId = ledger.UserId,
-                            Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
-                            Paid = ledger.CreditedAmount,
-                            Owes = ledger.DebitedAmount
-                        };
+                        //ExpenseLedger expenseLedger = new ExpenseLedger
+                        //{
+                        //    UserId = ledger.UserId,
+                        //    Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
+                        //    Paid = ledger.CreditedAmount,
+                        //    Owes = ledger.DebitedAmount
+                        //};
+
+                        ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
+                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault();
+
                         ExpenseLedgerList.Add(expenseLedger);
                     }
 
-                    ExpenseDetail expenseDetail = new ExpenseDetail
-                    {
-                        ExpenseLedgers = ExpenseLedgerList,
-                        AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
-                        Amount = expense.Amount,
-                        ExpenseId = expense.Id,
-                        CreatedOn = expense.CreatedOn,
-                        ExpenseType = expense.ExpenseType,
-                        Note = expense.Note,
-                        Description = expense.Description,
-                        GroupId = groupId
-                    };
+                    //ExpenseDetail expenseDetail = new ExpenseDetail
+                    //{
+                    //    ExpenseLedgers = ExpenseLedgerList,
+                    //    AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
+                    //    Amount = expense.Amount,
+                    //    ExpenseId = expense.Id,
+                    //    CreatedOn = expense.CreatedOn,
+                    //    ExpenseType = expense.ExpenseType,
+                    //    Note = expense.Note,
+                    //    Description = expense.Description,
+                    //    GroupId = groupId
+                    //};
+
+                    ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
+                    expenseDetail.AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();
+                    expenseDetail.ExpenseLedgers = ExpenseLedgerList;
 
                     ExpenseDetailList.Add(expenseDetail);
                 }
