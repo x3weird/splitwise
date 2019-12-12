@@ -26,6 +26,7 @@ namespace Splitwise.Core.ApiControllers
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var userId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
             var activitiesList = await _unitOfWork.Activity.ActivityList(userId);
+            await _unitOfWork.Commit();
             return Ok(activitiesList);
         }
 

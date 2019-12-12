@@ -113,6 +113,10 @@ export class UserService {
     return this.http.post(this.BaseURL + "/comments", comment);
   }
 
+  deleteComment(commentId: string) {
+    return this.http.delete(this.BaseURL + "/comments/" + commentId);
+  }
+
   deleteExpense(expenseId: string) {
     return this.http.delete(this.BaseURL + "/expenses/" + expenseId);
   }

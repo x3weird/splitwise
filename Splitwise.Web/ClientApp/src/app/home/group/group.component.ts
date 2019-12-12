@@ -84,11 +84,23 @@ export class GroupComponent implements OnInit {
   }
 
   deleteExpense(expenseId: string) {
-    console.log("delete");
     var check = confirm("Are you sure you want to delete expense ?");
     if (check) {
       this.service.deleteExpense(expenseId).subscribe(
         (res: any) => { console.log(res); location.reload(); },
+        (err) => { console.log(err); }
+      );
+    }
+  }
+
+  deleteComment(commentId: string) {
+    var check = confirm("Are you sure you want to delete this comment?");
+    if (check) {
+      this.service.deleteComment(commentId).subscribe(
+        (data: any) => {
+          console.log(data);
+          location.reload();
+        },
         (err) => { console.log(err); }
       );
     }

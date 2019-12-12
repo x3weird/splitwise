@@ -7,6 +7,7 @@ using AutoMapper;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Splitwise.DomainModel.Models;
+using Splitwise.DomainModel.Models.ApplicationClasses;
 
 namespace Splitwise.Repository.GroupRepository
 {
@@ -37,7 +38,7 @@ namespace Splitwise.Repository.GroupRepository
         public async Task<int> AddGroup(GroupAdd groupAdd, string email)
         {
             var currentUserId = await _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s=>s.Id).FirstOrDefaultAsync();
-            var query = _db.Groups.Where(g => g.Name.Equals(groupAdd.Name)).SingleOrDefault();
+            var query = await _db.Groups.Where(g => g.Name.Equals(groupAdd.Name)).SingleOrDefaultAsync();
             if (query == null)
             {
                 //Group group = new Group
@@ -89,12 +90,12 @@ namespace Splitwise.Repository.GroupRepository
                             GroupId = group.Id,
                             UserId = user.Id
                         };
-                        _db.GroupMembers.Add(groupMember);
+                        await _db.GroupMembers.AddAsync(groupMember);
 
                     }
                     else
                     {
-                        var checkFriend = _db.Friends.Where(f => (f.FriendId.Equals(User.Id) && f.UserId.Equals(currentUserId)) || (f.FriendId.Equals(currentUserId) && f.UserId.Equals(User.Id))).FirstOrDefault();
+                        var checkFriend = await _db.Friends.Where(f => (f.FriendId.Equals(User.Id) && f.UserId.Equals(currentUserId)) || (f.FriendId.Equals(currentUserId) && f.UserId.Equals(User.Id))).FirstOrDefaultAsync();
 
                         if (checkFriend == null)
                         {
@@ -103,7 +104,7 @@ namespace Splitwise.Repository.GroupRepository
                                 FriendId = User.Id,
                                 UserId = currentUserId
                             };
-                            _db.Add(friend);
+                            await _db.Friends.AddAsync(friend);
                         }
 
                         GroupMember groupMember = new GroupMember
@@ -111,7 +112,7 @@ namespace Splitwise.Repository.GroupRepository
                             GroupId = group.Id,
                             UserId = User.Id
                         };
-                        _db.GroupMembers.Add(groupMember);
+                        await _db.GroupMembers.AddAsync(groupMember);
 
                         
                     }
@@ -124,12 +125,7 @@ namespace Splitwise.Repository.GroupRepository
                     };
 
                     _db.Activities.Add(activity);
-
-                    await _db.SaveChangesAsync();
                 }
-
-
-
                 return 1;
             }
             else
@@ -140,7 +136,7 @@ namespace Splitwise.Repository.GroupRepository
 
         public async Task<GroupDetails> GetGroupDetails(string groupId)
         {
-            Group gp = _db.Groups.Where(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefault();
+            Group gp = await _db.Groups.Where(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefaultAsync();
 
             if (gp != null)
             {
@@ -217,12 +213,11 @@ namespace Splitwise.Repository.GroupRepository
                 }
                 UserExpense userExpense = new UserExpense()
                 {
-                    Name = _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).Single(),
+                    Name = await _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleAsync(),
                     Amount = sum,
                     Id = userId
                 };
                 userExpenses.Add(userExpense);
-                await _db.SaveChangesAsync();
             }
 
             return userExpenses;
@@ -235,7 +230,7 @@ namespace Splitwise.Repository.GroupRepository
             var expenseList = _db.Ledgers.Where(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
             foreach (var expenseId in expenseList)
             {
-                var check = _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId) && g.GroupId.Equals(groupId)).FirstOrDefault();
+                var check = await _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId) && g.GroupId.Equals(groupId)).FirstOrDefaultAsync();
                 if (check != null)
                 {
                     expenseIdList.Add(expenseId);
@@ -243,7 +238,7 @@ namespace Splitwise.Repository.GroupRepository
             }
             var expenses = _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
-            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName }).Distinct();
+            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName }).Distinct();
             foreach (var expense in expenses)
             {
                 if (expense.IsDeleted.Equals(false))
@@ -264,9 +259,32 @@ namespace Splitwise.Repository.GroupRepository
                         //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
-                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault();
+                        expenseLedger.Name = await userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefaultAsync();
 
                         ExpenseLedgerList.Add(expenseLedger);
+                    }
+
+                    List<CommentDetails> commentDetails = new List<CommentDetails>();
+
+                    var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
+                    //var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
+
+                    foreach (var comment in commentList)
+                    {
+                        //CommentDetails commentDetail = new CommentDetails
+                        //{
+                        //    Id = comment.Id,
+                        //    Content = comment.CommentData,
+                        //    UserId = comment.UserId,
+                        //    Name = await _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync()
+                        //};
+
+                        CommentDetails commentDetail = _mapper.Map<CommentDetails>(comment);
+                        commentDetail.Name = await _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync();
+
+                        commentDetails.Add(commentDetail);
+
+                        commentDetails.Add(commentDetail);
                     }
 
                     //ExpenseDetail expenseDetail = new ExpenseDetail
@@ -283,8 +301,9 @@ namespace Splitwise.Repository.GroupRepository
                     //};
 
                     ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
-                    expenseDetail.AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();
+                    expenseDetail.AddedBy = await _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync();
                     expenseDetail.ExpenseLedgers = ExpenseLedgerList;
+                    expenseDetail.Comments = commentDetails;
 
                     ExpenseDetailList.Add(expenseDetail);
                 }

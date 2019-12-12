@@ -42,7 +42,9 @@ namespace Splitwise.Core.ApiControllers
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
-            if (await _unitOfWork.Group.AddGroup(groupAdd, email) == 1)
+            var check = await _unitOfWork.Group.AddGroup(groupAdd, email);
+            await _unitOfWork.Commit();
+            if (check == 1)
             {
                 await _unitOfWork.Commit();
                 return Ok();
@@ -76,6 +78,7 @@ namespace Splitwise.Core.ApiControllers
         public async Task<object> GroupUserExpense(string groupId, List<string> users)
         {
             List<UserExpense> userExpenses = await _unitOfWork.Group.GroupUserExpense(groupId, users);
+            await _unitOfWork.Commit();
             return Ok(userExpenses);
         }
     }

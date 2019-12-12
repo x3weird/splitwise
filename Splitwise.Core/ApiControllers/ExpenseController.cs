@@ -57,6 +57,7 @@ namespace Splitwise.Core.ApiControllers
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
             int i = await _unitOfWork.Expense.DeleteExpense(expenseId, currentUserId);
+            await _unitOfWork.Commit();
             if (i == 1)
             {
                 return Ok();
@@ -84,6 +85,7 @@ namespace Splitwise.Core.ApiControllers
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
             await _unitOfWork.Expense.UnDeleteExpense(expenseId, currentUserId);
+            await _unitOfWork.Commit();
             return Ok();
         }
     }

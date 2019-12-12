@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Splitwise.DomainModel.Models;
+using Splitwise.DomainModel.Models.ApplicationClasses;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,7 +29,7 @@ namespace Splitwise.Repository.FriendRepository
         }
         public async Task<List<UserNameWithId>> GetFriendList(string userId)
         {
-            var friendList = _db.Friends.Where(f => f.FriendId.Equals(userId) || f.UserId.Equals(userId));
+            var friendList = await _db.Friends.Where(f => f.FriendId.Equals(userId) || f.UserId.Equals(userId)).ToListAsync();
             List<string> friendListUserId = new List<string>();
             List<UserNameWithId> friendLists = new List<UserNameWithId>();
             foreach (var friend in friendList)
@@ -41,14 +43,14 @@ namespace Splitwise.Repository.FriendRepository
                     friendListUserId.Add(friend.UserId);
                 }
             }
-            var friendListWithName = _db.Users.Join(friendListUserId,
+            var friendListWithName = await _db.Users.Join(friendListUserId,
                                                     u => u.Id,
                                                     f => f,
                                                     (u, f) => new
                                                     {
                                                         userId = f,
                                                         name = u.FirstName
-                                                    });
+                                                    }).ToListAsync();
 
             foreach (var friend in friendListWithName)
             {
@@ -67,7 +69,7 @@ namespace Splitwise.Repository.FriendRepository
 
             for (int i = 0; i < inviteFriend.Email.Count(); i++)
             {
-                var check = _db.Users.Where(u => u.Email.Equals(inviteFriend.Email[i].ToLower())).Select(s => s.Id).FirstOrDefault();
+                var check = await _db.Users.Where(u => u.Email.Equals(inviteFriend.Email[i].ToLower())).Select(s => s.Id).FirstOrDefaultAsync();
 
                 if (check != null)
                 {
@@ -191,7 +193,7 @@ namespace Splitwise.Repository.FriendRepository
             //var expenseIdList = _db.Ledgers.Where(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
             var expenses = _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
-            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { Id = u.Id, Name = u.FirstName }).Distinct();
+            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName }).Distinct();
             foreach (var expense in expenses)
             {
                 if (expense.IsDeleted.Equals(false))
@@ -217,6 +219,29 @@ namespace Splitwise.Repository.FriendRepository
                         ExpenseLedgerList.Add(expenseLedger);
                     }
 
+                    List<CommentDetails> commentDetails = new List<CommentDetails>();
+
+                    var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
+                    //var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
+
+                    foreach (var comment in commentList)
+                    {
+                        //CommentDetails commentDetail = new CommentDetails
+                        //{
+                        //    Id = comment.Id,
+                        //    Content = comment.CommentData,
+                        //    UserId = comment.UserId,
+                        //    Name = _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefault()
+                        //};
+
+                        CommentDetails commentDetail = _mapper.Map<CommentDetails>(comment);
+                        commentDetail.Name = _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefault();
+
+                        commentDetails.Add(commentDetail);
+
+                        commentDetails.Add(commentDetail);
+                    }
+
                     //ExpenseDetail expenseDetail = new ExpenseDetail
                     //{
                     //    ExpenseLedgers = ExpenseLedgerList,
@@ -232,6 +257,7 @@ namespace Splitwise.Repository.FriendRepository
                     ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
                     expenseDetail.AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();
                     expenseDetail.ExpenseLedgers = ExpenseLedgerList;
+                    expenseDetail.Comments = commentDetails;
 
                     ExpenseDetailList.Add(expenseDetail);
                 }
@@ -248,7 +274,7 @@ namespace Splitwise.Repository.FriendRepository
             List<Ledger> ledgers = new List<Ledger>();
             foreach (var x in expenseIdList)
             {
-                ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(x)).ToList();
+                ledgers = await _db.Ledgers.Where(l => l.ExpenseId.Equals(x)).ToListAsync();
             }
             float sum = 0;
             foreach (var x in ledgers)
@@ -258,7 +284,7 @@ namespace Splitwise.Repository.FriendRepository
             }
             UserExpense userExpense = new UserExpense()
             {
-                Name = _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleOrDefault(),
+                Name = await _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleOrDefaultAsync(),
                 Amount = sum,
                 Id = userId
             };
@@ -268,9 +294,8 @@ namespace Splitwise.Repository.FriendRepository
 
         public async Task RemoveFriend(string friendId, string userId)
         {
-            var friendList = _db.Friends.Where(f => (f.UserId.Equals(friendId) && f.FriendId.Equals(userId)) || (f.UserId.Equals(userId) && f.FriendId.Equals(friendId)));
+            var friendList = await _db.Friends.Where(f => (f.UserId.Equals(friendId) && f.FriendId.Equals(userId)) || (f.UserId.Equals(userId) && f.FriendId.Equals(friendId))).ToListAsync();
             _db.RemoveRange(friendList);
-            await _db.SaveChangesAsync();
         }
     }
 }

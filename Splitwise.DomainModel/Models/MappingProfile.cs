@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Splitwise.DomainModel.Models.ApplicationClasses;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -76,6 +77,11 @@ namespace Splitwise.DomainModel.Models
                 .ForMember(dest => 
                 dest.ActivityId,
                 opt => opt.MapFrom(src=>src.Id));
+
+            CreateMap<Comment, CommentDetails>()
+                .ForMember(dest => 
+                dest.Content,
+                opt => opt.MapFrom(src => src.CommentData));
         }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Splitwise.DomainModel.Models;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,7 @@ namespace Splitwise.Repository.ActivityRepository
             List<ActivityDetails> activityDetails = new List<ActivityDetails>();
             foreach (var activities in _db.Activities)
             {
-                var activityLog = _db.ActivityUsers.Where(a => a.ActivityId.Equals(activities.Id) && a.ActivityUserId.Equals(userId)).ToList();
+                var activityLog = await _db.ActivityUsers.Where(a => a.ActivityId.Equals(activities.Id) && a.ActivityUserId.Equals(userId)).ToListAsync();
                 
                 if (activityLog.FirstOrDefault() != null)
                 {
@@ -34,7 +35,6 @@ namespace Splitwise.Repository.ActivityRepository
                         ActivityDetails activityDetail = _mapper.Map<ActivityDetails>(activities);
                         activityDetail.Log2 = activityUsers.Log;
                         activityDetails.Add(activityDetail);
-                        await _db.SaveChangesAsync();
                     }
                 } else
                 {

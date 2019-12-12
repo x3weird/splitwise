@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore;
 using Splitwise.DomainModel.Models;
 using System;
 using System.Collections.Generic;
@@ -29,9 +30,8 @@ namespace Splitwise.Repository.CommentRepository
 
         public async Task DeleteComment(string commentId)
         {
-            Comment comment = _db.Comments.Where(c => c.Id.Equals(commentId)).FirstOrDefault();
+            Comment comment = await _db.Comments.Where(c => c.Id.Equals(commentId)).FirstOrDefaultAsync();
             _db.Comments.Remove(comment);
-            await _db.SaveChangesAsync();
         }
     }
 }

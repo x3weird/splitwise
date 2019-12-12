@@ -109,4 +109,18 @@ export class FriendComponent implements OnInit {
       );
     }
   }
+
+  deleteComment(commentId: string) {
+    console.log("delete" + commentId);
+    var check = confirm("Are you sure you want to delete this comment?");
+    if (check) {
+      this.service.deleteComment(commentId).subscribe(
+        (data: any) => {
+          console.log(data);
+          location.reload();
+        },
+        (err) => { console.log(err); }
+      );
+    }
+  }
 }

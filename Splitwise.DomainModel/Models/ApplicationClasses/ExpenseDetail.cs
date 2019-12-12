@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Splitwise.DomainModel.Models.ApplicationClasses;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -18,7 +19,7 @@ namespace Splitwise.DomainModel.Models
         public string AddedBy { get; set; }
         public float Amount { get; set; }
         public List<ExpenseLedger> ExpenseLedgers { get; set; }
-        public List<string> Comments { get; set; }
+        public List<CommentDetails> Comments { get; set; }
 
         #endregion
     }

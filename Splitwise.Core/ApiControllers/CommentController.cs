@@ -33,9 +33,11 @@ namespace Splitwise.Core.ApiControllers
         }
 
         [HttpDelete]
+        [Route("{commentId}")]
         public async Task<object> DeleteComment(string commentId)
         {
             await _unitOfWork.Comment.DeleteComment(commentId);
+            await _unitOfWork.Commit();
             return Ok();
         }
     }
