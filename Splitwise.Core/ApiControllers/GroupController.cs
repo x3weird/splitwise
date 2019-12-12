@@ -27,6 +27,15 @@ namespace Splitwise.Core.ApiControllers
             return await _unitOfWork.Group.GetGroupList();
         }
 
+        [HttpDelete]
+        [Route("{groupId}")]
+        public async Task<object> DeleteFriend(string groupId)
+        {
+            await _unitOfWork.Group.RemoveGroup(groupId);
+            await _unitOfWork.Commit();
+            return Ok();
+        }
+
         [HttpGet]
         [Route("expenseList/{groupId}")]
         public async Task<List<ExpenseDetail>> GetGroupExpenseList(string groupId)

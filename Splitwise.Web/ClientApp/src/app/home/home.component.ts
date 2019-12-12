@@ -88,4 +88,26 @@ export class HomeComponent implements OnInit {
     );
   }
 
+  deleteFriend(friendId: string) {
+    //console.log("delete - "+friendId);
+    this.service.deleteFriend(friendId).subscribe(
+      (data: any) => {
+        console.log(data);
+        location.reload();
+      },
+      (err) => { console.log(err); }
+    );
+  }
+
+  deleteGroup(groupId: string) {
+    //console.log("delete - "+friendId);
+    this.service.deleteGroup(groupId).subscribe(
+      (data: any) => {
+        console.log(data);
+        location.reload();
+      },
+      (err) => { console.log(err); }
+    );
+  }
+
 }

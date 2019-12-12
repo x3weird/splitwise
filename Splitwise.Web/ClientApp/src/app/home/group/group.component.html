@@ -7,11 +7,11 @@
     <input id="collapsible" class="toggle" type="checkbox">
     <a (click)="deleteExpense(expense.expenseId)" style="cursor:pointer; color:red;">x</a>
     <label for="collapsible" class="lbl-toggle" (click)="clickExpense(expense.expenseId)">
-      <div style="display:inline-block;">{{expense.createdOn.split('T')[0].split('-')[1]}}-{{expense.createdOn.split('T')[0].split('-')[0]}}<br /> {{expense.createdOn.split('T')[0].split('-')[2]}} </div>
+      <span style="display:inline-block;">{{expense.createdOn.split('T')[0].split('-')[1]}}-{{expense.createdOn.split('T')[0].split('-')[0]}}<br /> {{expense.createdOn.split('T')[0].split('-')[2]}} </span>
       <span style="font-size:20px"> {{expense.description}}</span>
 
-      <div style="display:inline-block; position:absolute; right:180px;">{{paidBy[i]}} paid <br /> {{paid[i]}} </div>
-      <div style="display:inline-block; position:absolute; right:0px;">{{lentBy[i]}} lent {{lentTo[i]}} <br /> {{lent[i]}} </div>
+      <span style="display:inline-block; position:absolute; right:180px;">{{paidBy[i]}} paid <br /> {{paid[i]}} </span>
+      <span style="display:inline-block; position:absolute; right:0px;">{{lentBy[i]}} lent {{lentTo[i]}} <br /> {{lent[i]}} </span>
     </label>
     <div class="hide" id={{expense.expenseId}}>
       <div class="content-inner">

@@ -128,4 +128,12 @@ export class UserService {
   getEditExpense(expenseId: string) {
     return this.http.get(this.BaseURL + "/expenses/editExpense/" + expenseId);
   }
+
+  deleteFriend(friendId: string) {
+    return this.http.delete(this.BaseURL + "/friends/" + friendId);
+  }
+
+  deleteGroup(groupId: string) {
+    return this.http.delete(this.BaseURL + "/groups/" + groupId);
+  }
 }

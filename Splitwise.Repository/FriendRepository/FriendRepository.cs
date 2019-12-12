@@ -295,7 +295,7 @@ namespace Splitwise.Repository.FriendRepository
         public async Task RemoveFriend(string friendId, string userId)
         {
             var friendList = await _db.Friends.Where(f => (f.UserId.Equals(friendId) && f.FriendId.Equals(userId)) || (f.UserId.Equals(userId) && f.FriendId.Equals(friendId))).ToListAsync();
-            _db.RemoveRange(friendList);
+            _db.Friends.RemoveRange(friendList);
         }
     }
 }

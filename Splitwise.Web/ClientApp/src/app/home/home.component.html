@@ -7,11 +7,11 @@
         <a [routerLink]="['/home/all']" routerLinkActive="active">All Expense</a>
         <a [routerLink]="['/home/groups/new']" routerLinkActive="active" style="padding: 10px; background-color: darkgrey">GROUPS +add</a>
         <span *ngFor="let g of groupList">
-          <a [routerLink]="['/home/groups/', g.userId]" routerLinkActive="active" style="padding: 7px; font-size:14px;">{{g.name}}</a>
+          <a [routerLink]="['/home/groups/', g.userId]" routerLinkActive="active" style="padding: 7px; font-size:14px; width:150px;display:inline-block;">{{g.name}}</a><a style=" display:inline-block; cursor:pointer;" (click)="deleteGroup(g.userId)">x</a>
         </span>
         <a style="padding: 10px; background-color: darkgrey; cursor:pointer;" data-toggle="modal" data-target="#modalAddFriendForm">FRIENDS +add</a>
-        <span *ngFor="let f of friendList">
-          <a [routerLink]="['/home/friends/', f.userId]" routerLinkActive="active" style="padding: 7px; font-size:14px;">{{f.name}}</a>
+        <span *ngFor="let f of friendList" style="display:block;">
+          <a [routerLink]="['/home/friends/', f.userId]" routerLinkActive="active" style="padding: 7px; font-size:14px; width:150px;display:inline-block;">{{f.name}}</a><a style=" display:inline-block; cursor:pointer;" (click)="deleteFriend(f.userId)">x</a>
         </span>
 
         <div style="padding:5px">

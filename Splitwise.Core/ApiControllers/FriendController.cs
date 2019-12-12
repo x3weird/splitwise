@@ -29,6 +29,17 @@ namespace Splitwise.Core.ApiControllers
             return await _unitOfWork.Friend.GetFriendList(userId);
         }
 
+        [HttpDelete]
+        [Route("{friendId}")]
+        public async Task<object> DeleteFriend(string friendId)
+        {
+            var claimsIdentity = this.User.Identity as ClaimsIdentity;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            await _unitOfWork.Friend.RemoveFriend(friendId, userId);
+            await _unitOfWork.Commit();
+            return Ok();
+        }
+
         [HttpPost]
         [Route("inviteFriend")]
         public async Task<object> InviteFriend(InviteFriend inviteFriend)

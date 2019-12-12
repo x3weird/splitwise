@@ -311,5 +311,17 @@ namespace Splitwise.Repository.GroupRepository
 
             return ExpenseDetailList;
         }
+
+        public async Task RemoveGroup(string groupId)
+        {
+            var groupMember = _db.GroupMembers.Where(gm => gm.GroupId.Equals(groupId));
+            _db.GroupMembers.RemoveRange(groupMember);
+            await _db.SaveChangesAsync();
+            var groupExpense = _db.GroupExpenses.Where(ge => ge.GroupId.Equals(groupId));
+            _db.GroupExpenses.RemoveRange(groupExpense);
+            await _db.SaveChangesAsync();
+            var group = await _db.Groups.Where(g => g.Id.Equals(groupId)).FirstOrDefaultAsync();
+            _db.Groups.Remove(group);
+        }
     }
 }
