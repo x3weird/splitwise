@@ -30,7 +30,7 @@ namespace Splitwise.Repository.CommentRepository
 
         public async Task DeleteComment(string commentId)
         {
-            Comment comment = await _db.Comments.Where(c => c.Id.Equals(commentId)).FirstOrDefaultAsync();
+            Comment comment = await _db.Comments.Where(c => c.Id.Equals(commentId)).SingleAsync();
             _db.Comments.Remove(comment);
         }
     }

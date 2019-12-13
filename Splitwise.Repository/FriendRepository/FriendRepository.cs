@@ -69,7 +69,7 @@ namespace Splitwise.Repository.FriendRepository
 
             for (int i = 0; i < inviteFriend.Email.Count(); i++)
             {
-                var check = await _db.Users.Where(u => u.Email.Equals(inviteFriend.Email[i].ToLower())).Select(s => s.Id).FirstOrDefaultAsync();
+                var check = await _db.Users.Where(u => u.Email.Equals(inviteFriend.Email[i].ToLower())).Select(s => s.Id).SingleOrDefaultAsync();
 
                 if (check != null)
                 {
@@ -214,7 +214,7 @@ namespace Splitwise.Repository.FriendRepository
                         //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
-                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault();
+                        expenseLedger.Name = await userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).SingleAsync();
 
                         ExpenseLedgerList.Add(expenseLedger);
                     }
@@ -235,7 +235,7 @@ namespace Splitwise.Repository.FriendRepository
                         //};
 
                         CommentDetails commentDetail = _mapper.Map<CommentDetails>(comment);
-                        commentDetail.Name = _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefault();
+                        commentDetail.Name = await _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).SingleAsync();
 
                         commentDetails.Add(commentDetail);
 
@@ -284,7 +284,7 @@ namespace Splitwise.Repository.FriendRepository
             }
             UserExpense userExpense = new UserExpense()
             {
-                Name = await _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleOrDefaultAsync(),
+                Name = await _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleAsync(),
                 Amount = sum,
                 Id = userId
             };

@@ -54,7 +54,7 @@ namespace Splitwise.Repository.ExpenseRepository
                         //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
-                        expenseLedger.Name = await userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefaultAsync();
+                        expenseLedger.Name = await userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).SingleAsync();
 
                         ExpenseLedgerList.Add(expenseLedger);
                     }
@@ -74,7 +74,7 @@ namespace Splitwise.Repository.ExpenseRepository
                         //};
 
                         CommentDetails commentDetail = _mapper.Map<CommentDetails>(comment);
-                        commentDetail.Name = await _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync();
+                        commentDetail.Name = await _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).SingleAsync();
 
                         commentDetails.Add(commentDetail);
                     }
@@ -93,7 +93,7 @@ namespace Splitwise.Repository.ExpenseRepository
                     //};
 
                     ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
-                    expenseDetail.AddedBy = await _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync();
+                    expenseDetail.AddedBy = await _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).SingleAsync();
                     expenseDetail.ExpenseLedgers = ExpenseLedgerList;
                     expenseDetail.Comments = commentDetails;
 
@@ -107,7 +107,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
         public async Task<int> DeleteExpense(string expenseId, string currentUserId)
         {
-            var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId)).FirstOrDefaultAsync();
+            var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId)).SingleOrDefaultAsync();
             if (expense == null)
             {
                 return 0;
@@ -116,10 +116,10 @@ namespace Splitwise.Repository.ExpenseRepository
             {
                 expense.IsDeleted = true;
                 
-                var group = await _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
+                var group = await _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
                 Activity activity = new Activity
                 {
-                    Log = await _db.Users.Where(u=>u.Id.Equals(currentUserId)).Select(s=>s.FirstName).FirstOrDefaultAsync() + " deleted " + expense.Description,
+                    Log = await _db.Users.Where(u=>u.Id.Equals(currentUserId)).Select(s=>s.FirstName).SingleAsync() + " deleted " + expense.Description,
                     ActivityOn = group == null?"Expense":"Group",
                     ActivityOnId = group == null ? expense.Id : group.GroupId,
                     Date = DateTime.Now
@@ -135,13 +135,13 @@ namespace Splitwise.Repository.ExpenseRepository
 
         public async Task AddExpense(AddExpense addExpense)
         {
-            addExpense.AddedBy = await _db.Users.Where(u => u.Email.Equals(addExpense.AddedBy.ToLower())).Select(s => s.Id).FirstOrDefaultAsync();
+            addExpense.AddedBy = await _db.Users.Where(u => u.Email.Equals(addExpense.AddedBy.ToLower())).Select(s => s.Id).SingleAsync();
             string userId;
 
             foreach (var item in addExpense.EmailList)
             {
 
-                var Id = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefaultAsync();
+                var Id = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleOrDefaultAsync();
 
                 if (addExpense.AddedBy != Id)
                 {
@@ -174,7 +174,7 @@ namespace Splitwise.Repository.ExpenseRepository
                     }
                     else
                     {
-                        var checkFriend = _db.Friends.Where(f => f.FriendId.Equals(Id) && f.UserId.Equals(addExpense.AddedBy)).FirstOrDefault();
+                        var checkFriend = await _db.Friends.Where(f => f.FriendId.Equals(Id) && f.UserId.Equals(addExpense.AddedBy)).SingleOrDefaultAsync();
                         if (checkFriend == null)
                         {
                             Friend friend = new Friend()
@@ -212,7 +212,7 @@ namespace Splitwise.Repository.ExpenseRepository
               
                 Activity activityVar = new Activity()
                 {
-                    Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync() + " added " + addExpense.Description + " in " + _db.Groups.Where(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).FirstOrDefault(),
+                    Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync() + " added " + addExpense.Description + " in " + _db.Groups.Where(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).SingleAsync(),
                     ActivityOn = "Group",
                     ActivityOnId = addExpense.GroupId,
                     Date = DateTime.Now
@@ -229,7 +229,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
             Activity activity = new Activity()
             {
-                Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync() + " added " + addExpense.Description,
+                Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).SingleAsync() + " added " + addExpense.Description,
                 ActivityOn = "Expense",
                 ActivityOnId = expense.Id,
                 Date = DateTime.Now
@@ -265,7 +265,7 @@ namespace Splitwise.Repository.ExpenseRepository
                 }
 
                 ledger.ExpenseId = expense.Id;
-                ledger.UserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefaultAsync();
+                ledger.UserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
                 if (ledger.DebitedAmount > 0)
                 {
                     //ActivityUser activityUser = new ActivityUser()
@@ -276,8 +276,8 @@ namespace Splitwise.Repository.ExpenseRepository
                     //};
 
                     ActivityUser activityUser = _mapper.Map<ActivityUser>(activity);
-                    activityUser.Log = await _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefaultAsync() + " gets back ₹" + ledger.DebitedAmount;
-                    activityUser.ActivityUserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefaultAsync();
+                    activityUser.Log = await _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " gets back ₹" + ledger.DebitedAmount;
+                    activityUser.ActivityUserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
 
                     await _db.ActivityUsers.AddAsync(activityUser);
                 } else
@@ -290,15 +290,12 @@ namespace Splitwise.Repository.ExpenseRepository
                     //};
 
                     ActivityUser activityUser = _mapper.Map<ActivityUser>(activity);
-                    activityUser.Log = await _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefaultAsync() + " owe ₹" + ledger.DebitedAmount;
-                    activityUser.ActivityUserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefaultAsync();
+                    activityUser.Log = await _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " owe ₹" + ledger.DebitedAmount;
+                    activityUser.ActivityUserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
 
                     _db.ActivityUsers.Add(activityUser);
                 }
-                
-
                 _db.Ledgers.Add(ledger);
-                _db.SaveChanges();
             }
         }
 
@@ -315,11 +312,11 @@ namespace Splitwise.Repository.ExpenseRepository
             {
                 foreach (var expenseId in expenseIdList)
                 {
-                    if(await _db.Expenses.Where(e=>e.Description.Equals("Settle-Up") && e.Id.Equals(expenseId)).FirstOrDefaultAsync()==null)
+                    if(await _db.Expenses.Where(e=>e.Description.Equals("Settle-Up") && e.Id.Equals(expenseId)).SingleOrDefaultAsync()==null)
                     {
-                        if(await _db.Expenses.Where(e=>e.IsDeleted.Equals(false) && e.Id.Equals(expenseId)).FirstOrDefaultAsync() != null)
+                        if(await _db.Expenses.Where(e=>e.IsDeleted.Equals(false) && e.Id.Equals(expenseId)).SingleOrDefaultAsync() != null)
                         {
-                            var check = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount > 0 && l.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
+                            var check = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount > 0 && l.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
                             if (check != null)
                             {
                                 var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount < 0).FirstOrDefaultAsync();
@@ -336,8 +333,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                         //};
 
                                         UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                        userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync();
-
+                                        userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
                                         userExpenseList.Add(userExpense);
                                     }
                                     else
@@ -347,10 +343,10 @@ namespace Splitwise.Repository.ExpenseRepository
                                 }
                             }
 
-                            var check2 = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
+                            var check2 = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
                             if (check2 != null)
                             {
-                                var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount > 0).FirstOrDefaultAsync();
+                                var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
                                 if (userCheck != null)
                                 {
                                     var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
@@ -364,7 +360,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                         //};
 
                                         UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                        userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync();
+                                        userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleOrDefaultAsync();
 
                                         userExpenseList.Add(userExpense);
                                     }
@@ -384,7 +380,7 @@ namespace Splitwise.Repository.ExpenseRepository
             List<Expense> settleUpList = new List<Expense>();
             foreach (var expenseId in expenseIdList)
             {
-                var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId) && e.Description.Equals("Settle-Up") && e.IsDeleted.Equals(false)).FirstOrDefaultAsync();
+                var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId) && e.Description.Equals("Settle-Up") && e.IsDeleted.Equals(false)).SingleOrDefaultAsync();
                 if (expense != null)
                 {
                     settleUpList.Add(expense);
@@ -397,10 +393,10 @@ namespace Splitwise.Repository.ExpenseRepository
             {
                 foreach (var expenseId in expenseIdList)
                 {
-                    var check = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount > 0).FirstOrDefaultAsync();
+                    var check = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
                     if(check != null)
                     {
-                        var userCheck = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount < 0).FirstOrDefaultAsync();
+                        var userCheck = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount < 0).SingleOrDefaultAsync();
                         if (userCheck != null)
                         {
                             var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
@@ -414,7 +410,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                 //};
 
                                 UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync();
+                                userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
 
                                 userExpenseList.Add(userExpense);
                             }
@@ -425,10 +421,10 @@ namespace Splitwise.Repository.ExpenseRepository
                         }
                     }
 
-                    var check2 = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount < 0).FirstOrDefaultAsync();
+                    var check2 = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount < 0).SingleOrDefaultAsync();
                     if (check2 != null)
                     {
-                        var userCheck = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount > 0).FirstOrDefaultAsync();
+                        var userCheck = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
                         if (userCheck != null)
                         {
                             var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
@@ -442,7 +438,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                 //};
 
                                 UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync();
+                                userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
 
                                 userExpenseList.Add(userExpense);
                             }
@@ -463,7 +459,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
         public async Task SettleUp(SettleUp settleUp, string email)
         {
-            string AddedBy = _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).FirstOrDefault();
+            string AddedBy = await _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
 
             //Expense expense = new Expense()
             //{
@@ -517,7 +513,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
             Activity activity = new Activity
             {
-                Log = await _db.Users.Where(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).FirstOrDefaultAsync() + " Paid " + await _db.Users.Where(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).FirstOrDefaultAsync(),
+                Log = await _db.Users.Where(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).SingleAsync() + " Paid " + await _db.Users.Where(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).SingleAsync(),
                 ActivityOn = "Expense",
                 ActivityOnId = expense.Id,
                 Date = DateTime.Now
@@ -549,16 +545,16 @@ namespace Splitwise.Repository.ExpenseRepository
 
         public async Task UnDeleteExpense(string expenseId, string currentUserId)
         {
-            var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId)).FirstOrDefaultAsync();
+            var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId)).SingleOrDefaultAsync();
             if(expense!=null)
             {
                 expense.IsDeleted = false;
             }
 
-            var group = await _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
+            var group = await _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
             Activity activity = new Activity
             {
-                Log = _db.Users.Where(u => u.Id.Equals(currentUserId)).Select(s => s.FirstName).FirstOrDefault() + " unDeleted " + expense.Description,
+                Log = _db.Users.Where(u => u.Id.Equals(currentUserId)).Select(s => s.FirstName).SingleAsync() + " unDeleted " + expense.Description,
                 ActivityOn = group == null ? "Expense" : "Group",
                 ActivityOnId = group == null ? expense.Id : group.GroupId,
                 Date = DateTime.Now
