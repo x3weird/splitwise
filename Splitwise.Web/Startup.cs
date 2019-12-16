@@ -17,6 +17,7 @@ using Splitwise.DomainModel.Models;
 using Splitwise.Models;
 using Splitwise.Repository.ActivityRepository;
 using Splitwise.Repository.CommentRepository;
+using Splitwise.Repository.DataRepository;
 using Splitwise.Repository.ExpenseRepository;
 using Splitwise.Repository.FriendRepository;
 using Splitwise.Repository.GroupRepository;
@@ -49,6 +50,8 @@ namespace Splitwise.Web
             services.AddScoped<IFriendRepository, FriendRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
+
+            services.AddScoped<IDataRepository<Comment>, DataRepository<Comment>>();
 
             services.AddDbContextPool<SplitwiseDbContext>(options =>
             {
