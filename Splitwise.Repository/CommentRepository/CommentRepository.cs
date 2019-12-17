@@ -14,11 +14,10 @@ namespace Splitwise.Repository.CommentRepository
     {
         private readonly SplitwiseDbContext _db;
         private readonly IMapper _mapper;
-        private readonly IDataRepository<Comment> _dal;
+        private readonly IDataRepository _dal;
 
-        public CommentRepository(SplitwiseDbContext db, IMapper mapper, IDataRepository<Comment> dal)
+        public CommentRepository(IMapper mapper, IDataRepository dal)
         {
-            _db = db;
             _mapper = mapper;
             _dal = dal;
         }
@@ -34,8 +33,10 @@ namespace Splitwise.Repository.CommentRepository
 
         public async Task DeleteComment(string commentId)
         {
-            Comment comment = await _db.Comments.Where(c => c.Id.Equals(commentId)).SingleAsync();
-            _db.Comments.Remove(comment);
+            //Comment comment = await _db.Comments.Where(c => c.Id.Equals(commentId)).SingleAsync();
+            Comment comment = await _dal.Where<Comment>(c => c.Id.Equals(commentId)).SingleAsync();
+            //_db.Comments.Remove(comment);
+            _dal.Remove(comment);
         }
     }
 }

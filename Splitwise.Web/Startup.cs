@@ -51,7 +51,7 @@ namespace Splitwise.Web
             services.AddScoped<IUserRepository, UserRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
-            services.AddScoped<IDataRepository<Comment>, DataRepository<Comment>>();
+            services.AddScoped<IDataRepository, DataRepository>();
 
             services.AddDbContextPool<SplitwiseDbContext>(options =>
             {
