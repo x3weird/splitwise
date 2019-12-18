@@ -9,7 +9,8 @@ namespace Splitwise.Repository.GroupRepository
     public interface IGroupRepository
     {
         Task<List<UserNameWithId>> GetGroupList();
-        Task<int> AddGroup(GroupAdd groupAdd, string email);
+        Task<int> AddGroupMembers(GroupAdd groupAdd, string email, Group group);
+        Task<Group> AddGroup(GroupAdd groupAdd, string email);
         Task<GroupDetails> GetGroupDetails(string groupId);
         Task<List<UserExpense>> GroupUserExpense(string groupId, List<string> users);
         Task<List<ExpenseDetail>> GetGroupExpenseList(string groupId, string email);

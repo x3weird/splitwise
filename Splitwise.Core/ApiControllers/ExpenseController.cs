@@ -25,7 +25,19 @@ namespace Splitwise.Core.ApiControllers
         [Route("addExpense")]
         public async Task<object> AddExpense(AddExpense expense)
         {
-            await _unitOfWork.Expense.AddExpense(expense);
+            InviteFriend inviteFriend = new InviteFriend();
+            inviteFriend.Email = expense.EmailList;
+            var claimsIdentity = this.User.Identity as ClaimsIdentity;
+            var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            await _unitOfWork.Friend.RegisterNewFriends(inviteFriend, currentUserId);
+            await _unitOfWork.Commit();
+            await _unitOfWork.Friend.InviteFriend(inviteFriend, currentUserId);
+            await _unitOfWork.Commit();    
+            Expense addedExpense = await _unitOfWork.Expense.AddExpense(expense);
+            await _unitOfWork.Commit();
+            Activity addedActivity = await _unitOfWork.Expense.AddExpenseActivity(expense, addedExpense);
+            await _unitOfWork.Commit();
+            await _unitOfWork.Expense.AddExpenseInLedger(expense, addedExpense, addedActivity);
             await _unitOfWork.Commit();
             return Ok();
         }
@@ -36,7 +48,9 @@ namespace Splitwise.Core.ApiControllers
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
-            await _unitOfWork.Expense.SettleUp(settleUp, email);
+            var expense = await _unitOfWork.Expense.AddSettleUpExpense(settleUp, email);
+            await _unitOfWork.Commit();
+            await _unitOfWork.Expense.SettleUp(settleUp, email, expense);
             await _unitOfWork.Commit();
             return Ok();
         }

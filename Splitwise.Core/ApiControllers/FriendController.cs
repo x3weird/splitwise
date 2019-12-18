@@ -45,8 +45,9 @@ namespace Splitwise.Core.ApiControllers
         public async Task<object> InviteFriend(InviteFriend inviteFriend)
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
-            var email = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-            await _unitOfWork.Friend.InviteFriend(inviteFriend, email);
+            var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            await _unitOfWork.Friend.RegisterNewFriends(inviteFriend, currentUserId);
+            await _unitOfWork.Friend.InviteFriend(inviteFriend, currentUserId);
             await _unitOfWork.Commit();
             return Ok();
         }

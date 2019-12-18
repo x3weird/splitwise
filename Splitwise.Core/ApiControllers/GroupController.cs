@@ -51,7 +51,8 @@ namespace Splitwise.Core.ApiControllers
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
-            var check = await _unitOfWork.Group.AddGroup(groupAdd, email);
+            Group group = await _unitOfWork.Group.AddGroup(groupAdd, email);
+            var check = await _unitOfWork.Group.AddGroupMembers(groupAdd, email, group);
             await _unitOfWork.Commit();
             if (check == 1)
             {

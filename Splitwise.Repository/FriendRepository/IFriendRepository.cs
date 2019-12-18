@@ -13,6 +13,7 @@ namespace Splitwise.Repository.FriendRepository
         Task<List<ExpenseDetail>> GetFriendExpenseList(string friendId, string email);
         Task<UserExpense> UserExpense(string userId);
         Task RemoveFriend(string friendId, string userId);
+        Task RegisterNewFriends(InviteFriend inviteFriend, string currentUserId);
 
     }
 }

@@ -10,8 +10,10 @@ namespace Splitwise.Repository.DataRepository
     public interface IDataRepository
     {
         Task AddAsync<T>(T obj) where T : class;
+        Task AddRangeAsync<T>(List<T> obj) where T : class;
         IQueryable<T> Where<T>(Expression<Func<T, bool>> expression) where T : class;
         void Remove<T>(T obj) where T : class;
+        void RemoveRange<T>(List<T> obj) where T : class;
         Task<List<T>> Get<T>() where T : class;
     }
 }

@@ -144,7 +144,7 @@ namespace Splitwise.Repository.ExpenseRepository
                     Date = DateTime.Now
                 };
 
-                _db.Activities.Add(activity);
+                await _dal.AddAsync<Activity>(activity);
                 return 1;
             }
 
@@ -152,115 +152,11 @@ namespace Splitwise.Repository.ExpenseRepository
 
         }
 
-        public async Task AddExpense(AddExpense addExpense)
+        public async Task AddExpenseInLedger(AddExpense addExpense, Expense expense, Activity activity)
         {
-            //addExpense.AddedBy = await _db.Users.Where(u => u.Email.Equals(addExpense.AddedBy.ToLower())).Select(s => s.Id).SingleAsync();
 
-            addExpense.AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.Equals(addExpense.AddedBy.ToLower())).Select(s => s.Id).SingleAsync();
-
-            string userId;
-
-            foreach (var item in addExpense.EmailList)
-            {
-
-                //var Id = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleOrDefaultAsync();
-
-                var Id = await _dal.Where<ApplicationUser>(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleOrDefaultAsync();
-
-                if (addExpense.AddedBy != Id)
-                {
-                    if (Id == null)
-                    {
-                        var name = item;
-                        int index = name.IndexOf('@');
-                        if (index > 0)
-                            name = name.Substring(0, index);
-                        var user = new ApplicationUser
-                        {
-                            UserName = item,
-                            Email = item,
-                            FirstName = name,
-                            LastName = item,
-                            Currency = "INR",
-                            PhoneNumber = "1111111111",
-                            IsRegistered = false
-                        };
-                        var addedUser = _userManager.CreateAsync(user, "Random@123");
-                        userId = user.Id;
-                        Friend friend = new Friend()
-                        {
-                            FriendId = user.Id,
-                            UserId = addExpense.AddedBy
-                        };
-
-                        _db.Friends.Add(friend);
-                        await _db.SaveChangesAsync();
-                    }
-                    else
-                    {
-                        //var checkFriend = await _db.Friends.Where(f => f.FriendId.Equals(Id) && f.UserId.Equals(addExpense.AddedBy)).SingleOrDefaultAsync();
-                        var checkFriend = await _dal.Where<Friend>(f => f.FriendId.Equals(Id) && f.UserId.Equals(addExpense.AddedBy)).SingleOrDefaultAsync();
-                        if (checkFriend == null)
-                        {
-                            Friend friend = new Friend()
-                            {
-                                FriendId = Id,
-                                UserId = addExpense.AddedBy
-                            };
-
-                            _db.Friends.Add(friend);
-                            await _db.SaveChangesAsync();
-                        }
-
-                    }
-                }
-                await _db.SaveChangesAsync();
-            }
-
-            //Expense expense = new Expense()
-            //{
-            //    AddedBy = addExpense.AddedBy,
-            //    CreatedOn = addExpense.CreatedOn,
-            //    Description = addExpense.Description,
-            //    ExpenseType = addExpense.ExpenseType,
-            //    IsDeleted = false,
-            //    Note = addExpense.Note,
-            //    Amount = addExpense.Amount
-            //};
-
-            Expense expense = _mapper.Map<Expense>(addExpense);
-
-            var addedExpense = _db.Expenses.Add(expense);
-
-            if (addExpense.GroupId != "")
-            {
-              
-                Activity activityVar = new Activity()
-                {
-                    //Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync() + " added " + addExpense.Description + " in " + _db.Groups.Where(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).SingleAsync(),
-                    Log = await _dal.Where<ApplicationUser>(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync() + " added " + addExpense.Description + " in " + _dal.Where<Group>(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).SingleAsync(),
-                    ActivityOn = "Group",
-                    ActivityOnId = addExpense.GroupId,
-                    Date = DateTime.Now
-                };
-                await _db.Activities.AddAsync(activityVar);
-
-                GroupExpense groupExpense = new GroupExpense()
-                {
-                    ExpenseId = expense.Id,
-                    GroupId = addExpense.GroupId
-                };
-                await _db.GroupExpenses.AddAsync(groupExpense); 
-            }
-
-            Activity activity = new Activity()
-            {
-                Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).SingleAsync() + " added " + addExpense.Description,
-                ActivityOn = "Expense",
-                ActivityOnId = expense.Id,
-                Date = DateTime.Now
-            };
-            _db.Activities.Add(activity);
+            List<ActivityUser> activityUserList = new List<ActivityUser>();
+            List<Ledger> ledgerList = new List<Ledger>();
 
             foreach (var item in addExpense.EmailList)
             {
@@ -291,44 +187,88 @@ namespace Splitwise.Repository.ExpenseRepository
                 }
 
                 ledger.ExpenseId = expense.Id;
-                ledger.UserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
+                //ledger.UserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
+                ledger.UserId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
                 if (ledger.DebitedAmount > 0)
                 {
-                    //ActivityUser activityUser = new ActivityUser()
-                    //{
-                    //    Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " gets back ₹" + ledger.DebitedAmount,
-                    //    ActivityId = activity.Id,
-                    //    ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
-                    //};
 
                     ActivityUser activityUser = _mapper.Map<ActivityUser>(activity);
-                    activityUser.Log = await _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " gets back ₹" + ledger.DebitedAmount;
-                    activityUser.ActivityUserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
 
-                    await _db.ActivityUsers.AddAsync(activityUser);
+                    activityUser.Log = await _dal.Where<ApplicationUser>(u => u.Id.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " gets back ₹" + ledger.DebitedAmount;
+                    activityUser.ActivityUserId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
+                    activityUserList.Add(activityUser);
                 } else
                 {
-                    //ActivityUser activityUser = new ActivityUser()
-                    //{
-                    //    Log = _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).FirstOrDefault() + " owe ₹" + ledger.DebitedAmount,
-                    //    ActivityId = activity.Id,
-                    //    ActivityUserId = _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).FirstOrDefault()
-                    //};
-
                     ActivityUser activityUser = _mapper.Map<ActivityUser>(activity);
-                    activityUser.Log = await _db.Users.Where(u => u.Email.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " owe ₹" + ledger.DebitedAmount;
-                    activityUser.ActivityUserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
-
-                    _db.ActivityUsers.Add(activityUser);
+                    //activityUser.Log = await _db.Users.Where(u => u.Id.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " owe ₹" + ledger.DebitedAmount;
+                    activityUser.Log = await _dal.Where<ApplicationUser>(u => u.Id.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " owe ₹" + ledger.DebitedAmount;
+                    //activityUser.ActivityUserId = await _db.Users.Where(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
+                    activityUser.ActivityUserId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
+                    activityUser.Id = null;
+                    activityUserList.Add(activityUser);
                 }
-                _db.Ledgers.Add(ledger);
+                ledgerList.Add(ledger);
             }
+            await _dal.AddRangeAsync<ActivityUser>(activityUserList);
+            await _dal.AddRangeAsync<Ledger>(ledgerList);
+        }
+
+        public async Task<Expense> AddExpense(AddExpense addExpense)
+        {
+            //addExpense.AddedBy = await _db.Users.Where(u => u.Email.Equals(addExpense.AddedBy.ToLower())).Select(s => s.Id).SingleAsync();
+
+            addExpense.AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.Equals(addExpense.AddedBy.ToLower())).Select(s => s.Id).SingleAsync();
+
+            Expense expense = _mapper.Map<Expense>(addExpense);
+
+            //var addedExpense = _db.Expenses.Add(expense);
+            var addedExpense = _dal.AddAsync<Expense>(expense);
+            return expense;
+        }
+
+        public async Task<Activity> AddExpenseActivity(AddExpense addExpense, Expense expense)
+        {
+            if (addExpense.GroupId != "")
+            {
+
+                Activity activityVar = new Activity()
+                {
+                    //Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync() + " added " + addExpense.Description + " in " + _db.Groups.Where(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).SingleAsync(),
+                    Log = await _dal.Where<ApplicationUser>(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).FirstOrDefaultAsync() + " added " + addExpense.Description + " in " + _dal.Where<Group>(g => g.Id.Equals(addExpense.GroupId)).Select(s => s.Name).SingleAsync(),
+                    ActivityOn = "Group",
+                    ActivityOnId = addExpense.GroupId,
+                    Date = DateTime.Now
+                };
+                await _dal.AddAsync<Activity>(activityVar);
+
+                GroupExpense groupExpense = new GroupExpense()
+                {
+                    ExpenseId = expense.Id,
+                    GroupId = addExpense.GroupId
+                };
+                //await _db.GroupExpenses.AddAsync(groupExpense);
+                await _dal.AddAsync<GroupExpense>(groupExpense);
+            }
+
+            Activity activity = new Activity()
+            {
+                //Log = await _db.Users.Where(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).SingleAsync() + " added " + addExpense.Description,
+                Log = await _dal.Where<ApplicationUser>(u => u.Id.Equals(addExpense.AddedBy)).Select(s => s.FirstName).SingleAsync() + " added " + addExpense.Description,
+                ActivityOn = "Expense",
+                ActivityOnId = expense.Id,
+                Date = DateTime.Now
+            };
+            //_db.Activities.Add(activity);
+            await _dal.AddAsync<Activity>(activity);
+            return activity;
         }
 
         public async Task<List<UserExpense>> Dashboard(string email)
         {
-            string currentUserId = await _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
-            var expenseIdList = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId)).Select(s => s.ExpenseId).Distinct().ToListAsync();
+            //string currentUserId = await _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
+            //var expenseIdList = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId)).Select(s => s.ExpenseId).Distinct().ToListAsync();
+            string currentUserId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
+            var expenseIdList = await _dal.Where<Ledger>(l => l.UserId.Equals(currentUserId)).Select(s => s.ExpenseId).Distinct().ToListAsync();
             var userIdList = await _db.Ledgers.Join(expenseIdList, l => l.ExpenseId, e => e, (l, e) => new { userId = l.UserId }).Distinct().ToListAsync();
 
             List<UserExpense> userExpenseList = new List<UserExpense>();
@@ -338,14 +278,14 @@ namespace Splitwise.Repository.ExpenseRepository
             {
                 foreach (var expenseId in expenseIdList)
                 {
-                    if(await _db.Expenses.Where(e=>e.Description.Equals("Settle-Up") && e.Id.Equals(expenseId)).SingleOrDefaultAsync()==null)
+                    if(await _dal.Where<Expense>(e=>e.Description.Equals("Settle-Up") && e.Id.Equals(expenseId)).SingleOrDefaultAsync()==null)
                     {
-                        if(await _db.Expenses.Where(e=>e.IsDeleted.Equals(false) && e.Id.Equals(expenseId)).SingleOrDefaultAsync() != null)
+                        if(await _dal.Where<Expense>(e=>e.IsDeleted.Equals(false) && e.Id.Equals(expenseId)).SingleOrDefaultAsync() != null)
                         {
-                            var check = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount > 0 && l.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
+                            var check = await _dal.Where<Ledger>(l => l.UserId.Equals(currentUserId) && l.DebitedAmount > 0 && l.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
                             if (check != null)
                             {
-                                var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount < 0).FirstOrDefaultAsync();
+                                var userCheck = await _dal.Where<Ledger>(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount < 0).FirstOrDefaultAsync();
                                 if (userCheck != null)
                                 {
                                     var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
@@ -359,7 +299,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                         //};
 
                                         UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                        userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
+                                        userExpense.Name = await _dal.Where<ApplicationUser>(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
                                         userExpenseList.Add(userExpense);
                                     }
                                     else
@@ -369,10 +309,10 @@ namespace Splitwise.Repository.ExpenseRepository
                                 }
                             }
 
-                            var check2 = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
+                            var check2 = await _dal.Where<Ledger>(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
                             if (check2 != null)
                             {
-                                var userCheck = await _db.Ledgers.Where(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
+                                var userCheck = await _dal.Where<Ledger>(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
                                 if (userCheck != null)
                                 {
                                     var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
@@ -386,7 +326,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                         //};
 
                                         UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                        userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleOrDefaultAsync();
+                                        userExpense.Name = await _dal.Where<ApplicationUser>(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleOrDefaultAsync();
 
                                         userExpenseList.Add(userExpense);
                                     }
@@ -406,7 +346,7 @@ namespace Splitwise.Repository.ExpenseRepository
             List<Expense> settleUpList = new List<Expense>();
             foreach (var expenseId in expenseIdList)
             {
-                var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId) && e.Description.Equals("Settle-Up") && e.IsDeleted.Equals(false)).SingleOrDefaultAsync();
+                var expense = await _dal.Where<Expense>(e => e.Id.Equals(expenseId) && e.Description.Equals("Settle-Up") && e.IsDeleted.Equals(false)).SingleOrDefaultAsync();
                 if (expense != null)
                 {
                     settleUpList.Add(expense);
@@ -419,10 +359,10 @@ namespace Splitwise.Repository.ExpenseRepository
             {
                 foreach (var expenseId in expenseIdList)
                 {
-                    var check = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
+                    var check = await _dal.Where<Ledger>(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
                     if(check != null)
                     {
-                        var userCheck = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount < 0).SingleOrDefaultAsync();
+                        var userCheck = await _dal.Where<Ledger>(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount < 0).SingleOrDefaultAsync();
                         if (userCheck != null)
                         {
                             var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
@@ -447,10 +387,10 @@ namespace Splitwise.Repository.ExpenseRepository
                         }
                     }
 
-                    var check2 = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount < 0).SingleOrDefaultAsync();
+                    var check2 = await _dal.Where<Ledger>(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(currentUserId) && l.DebitedAmount < 0).SingleOrDefaultAsync();
                     if (check2 != null)
                     {
-                        var userCheck = await _db.Ledgers.Where(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
+                        var userCheck = await _dal.Where<Ledger>(l => l.ExpenseId.Equals(expenseId) && l.UserId.Equals(userId.userId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
                         if (userCheck != null)
                         {
                             var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
@@ -464,7 +404,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                 //};
 
                                 UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
+                                userExpense.Name = await _dal.Where<ApplicationUser>(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
 
                                 userExpenseList.Add(userExpense);
                             }
@@ -480,12 +420,9 @@ namespace Splitwise.Repository.ExpenseRepository
         }
 
 
-            
-
-
-        public async Task SettleUp(SettleUp settleUp, string email)
+        public async Task<Expense> AddSettleUpExpense(SettleUp settleUp, string email)
         {
-            string AddedBy = await _db.Users.Where(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
+            string AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
 
             //Expense expense = new Expense()
             //{
@@ -500,8 +437,17 @@ namespace Splitwise.Repository.ExpenseRepository
 
             Expense expense = _mapper.Map<Expense>(settleUp);
 
-            var addedExpense = _db.Expenses.AddAsync(expense);
-            await _db.SaveChangesAsync();
+            var addedExpense = _dal.AddAsync<Expense>(expense);
+
+            return expense;
+        }
+        
+
+
+        public async Task SettleUp(SettleUp settleUp, string email, Expense expense)
+        {
+            string AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
+
             if (settleUp.Group != "")
             {
                 GroupExpense groupExpense = new GroupExpense()
@@ -509,7 +455,7 @@ namespace Splitwise.Repository.ExpenseRepository
                     ExpenseId = expense.Id,
                     GroupId = settleUp.Group
                 };
-                await _db.GroupExpenses.AddAsync(groupExpense);
+                await _dal.AddAsync<GroupExpense>(groupExpense);
             }
 
             if (settleUp.Payer == "you")
@@ -539,13 +485,13 @@ namespace Splitwise.Repository.ExpenseRepository
 
             Activity activity = new Activity
             {
-                Log = await _db.Users.Where(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).SingleAsync() + " Paid " + await _db.Users.Where(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).SingleAsync(),
+                Log = await _dal.Where<ApplicationUser>(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).SingleAsync() + " Paid " + await _db.Users.Where(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).SingleAsync(),
                 ActivityOn = "Expense",
                 ActivityOnId = expense.Id,
                 Date = DateTime.Now
             };
 
-            _db.Activities.Add(activity);
+            await _dal.AddAsync<Activity>(activity);
 
             ActivityUser activityUser = new ActivityUser
             {
@@ -561,32 +507,32 @@ namespace Splitwise.Repository.ExpenseRepository
                 ActivityId = activity.Id
             };
 
-            await _db.ActivityUsers.AddAsync(activityUser);
-            await _db.ActivityUsers.AddAsync(activityUser2);
+            await _dal.AddAsync<ActivityUser>(activityUser);
+            await _dal.AddAsync<ActivityUser>(activityUser2);
 
-            await _db.Ledgers.AddAsync(ledgerPayer);
-            await _db.Ledgers.AddAsync(ledgerRecipient);
+            await _dal.AddAsync<Ledger>(ledgerPayer);
+            await _dal.AddAsync<Ledger>(ledgerRecipient);
 
         }
 
         public async Task UnDeleteExpense(string expenseId, string currentUserId)
         {
-            var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId)).SingleOrDefaultAsync();
+            var expense = await _dal.Where<Expense>(e => e.Id.Equals(expenseId)).SingleOrDefaultAsync();
             if(expense!=null)
             {
                 expense.IsDeleted = false;
             }
 
-            var group = await _db.GroupExpenses.Where(g => g.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
+            var group = await _dal.Where<GroupExpense>(g => g.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
             Activity activity = new Activity
             {
-                Log = _db.Users.Where(u => u.Id.Equals(currentUserId)).Select(s => s.FirstName).SingleAsync() + " unDeleted " + expense.Description,
+                Log = _dal.Where<ApplicationUser>(u => u.Id.Equals(currentUserId)).Select(s => s.FirstName).SingleAsync() + " unDeleted " + expense.Description,
                 ActivityOn = group == null ? "Expense" : "Group",
                 ActivityOnId = group == null ? expense.Id : group.GroupId,
                 Date = DateTime.Now
             };
 
-            await _db.Activities.AddAsync(activity);
+            await _dal.AddAsync<Activity>(activity);
         }
     }
 }

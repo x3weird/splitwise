@@ -31,6 +31,12 @@ namespace Splitwise.Repository.DataRepository
             await table.AddAsync(obj);
         }
 
+        public async Task AddRangeAsync<T>(List<T> obj) where T : class
+        {
+            DbSet<T> table = SetDb<T>();
+            await table.AddRangeAsync(obj);
+        }
+
         public IQueryable<T> Where<T>(Expression<Func<T, bool>> expression) where T : class
         {
             DbSet<T> table = SetDb<T>();
@@ -43,17 +49,23 @@ namespace Splitwise.Repository.DataRepository
             table.Remove(obj);
         }
 
+        public void RemoveRange<T>(List<T> obj) where T : class
+        {
+            DbSet<T> table = SetDb<T>();
+            table.RemoveRange(obj);
+        }
+
         public async Task<List<T>> Get<T>() where T : class
         {
             DbSet<T> table = SetDb<T>();
             return await  table.ToListAsync();
         }
 
-        //public IQueryable<T> Join<T, U, TKey>(Expression<Func<T, TKey>> tKey, Expression<Func<U, TKey>> uKey) where T : class, new() where U : class
+        //public Task Join<T, U, V, tKey, uKey>(Expression<Func<T, tKey>> expression, Expression<Func<U, tKey>> expression2, Expression<Func<V, uKey>> expression3) where T: class ,new() where U:class
         //{
         //    DbSet<T> tableT = SetDb<T>();
         //    DbSet<U> tableU = SetDb<U>();
-        //    var data = tableT.Join(tableU, tKey, uKey, (tblT, tblU) => tblT);
+        //    var data = tableT.Join(tableU, expression, expression2, expression3);
         //    return data;
         //}
 

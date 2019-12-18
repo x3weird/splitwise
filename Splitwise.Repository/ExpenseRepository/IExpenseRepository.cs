@@ -10,9 +10,12 @@ namespace Splitwise.Repository.ExpenseRepository
     {
         Task<List<ExpenseDetail>> GetExpenseList(string email);
         Task<int> DeleteExpense(string expenseId, string currentUserId);
-        Task AddExpense(AddExpense addExpense);
+        Task<Expense> AddExpense(AddExpense addExpense);
+        Task<Activity> AddExpenseActivity(AddExpense addExpense, Expense expense);
+        Task AddExpenseInLedger(AddExpense addExpense, Expense expense, Activity activity);
+        Task<Expense> AddSettleUpExpense(SettleUp settleUp, string email);
         Task<List<UserExpense>> Dashboard(string email);
-        Task SettleUp(SettleUp settleUp, string email);
+        Task SettleUp(SettleUp settleUp, string email, Expense expense);
         Task UnDeleteExpense(string expenseId, string currentUserId);
     }
 }

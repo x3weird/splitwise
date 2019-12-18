@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Splitwise.DomainModel.Models;
 using Splitwise.DomainModel.Models.ApplicationClasses;
+using Splitwise.Repository.DataRepository;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,16 +21,18 @@ namespace Splitwise.Repository.FriendRepository
         private readonly SplitwiseDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
+        private readonly IDataRepository _dal;
 
-        public FriendRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper)
+        public FriendRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper, IDataRepository dal)
         {
             _db = db;
             _userManager = userManager;
             _mapper = mapper;
+            _dal = dal;
         }
         public async Task<List<UserNameWithId>> GetFriendList(string userId)
         {
-            var friendList = await _db.Friends.Where(f => f.FriendId.Equals(userId) || f.UserId.Equals(userId)).ToListAsync();
+            var friendList = await _dal.Where<Friend>(f => f.FriendId.Equals(userId) || f.UserId.Equals(userId)).ToListAsync();
             List<string> friendListUserId = new List<string>();
             List<UserNameWithId> friendLists = new List<UserNameWithId>();
             foreach (var friend in friendList)
@@ -69,100 +72,104 @@ namespace Splitwise.Repository.FriendRepository
 
             for (int i = 0; i < inviteFriend.Email.Count(); i++)
             {
-                var check = await _db.Users.Where(u => u.Email.Equals(inviteFriend.Email[i].ToLower())).Select(s => s.Id).SingleOrDefaultAsync();
+                var currentUserEmail = await _dal.Where<ApplicationUser>(u=>u.Id.Equals(currentUserId)).Select(s=>s.Email).SingleAsync();
 
-                if (check != null)
+                if(currentUserEmail.ToLower() != inviteFriend.Email[i].ToLower())
                 {
-                    var checkFriend = _db.Friends.Where(f => (f.FriendId.Equals(check) && f.UserId.Equals(currentUserId)) || (f.FriendId.Equals(currentUserId) && f.UserId.Equals(check))).FirstOrDefault();
+                    var check = await _dal.Where<ApplicationUser>(u => u.Email.Equals(inviteFriend.Email[i].ToLower())).Select(s => s.Id).SingleOrDefaultAsync();
 
-                    if (checkFriend == null)
+                    if (check != null)
                     {
-                        Friend friend = new Friend
+                        var checkFriend = _dal.Where<Friend>(f => (f.FriendId.Equals(check) && f.UserId.Equals(currentUserId)) || (f.FriendId.Equals(currentUserId) && f.UserId.Equals(check))).FirstOrDefault();
+
+                        if (checkFriend == null)
                         {
-                            FriendId = check,
-                            UserId = currentUserId
-                        };
-                        _db.Add(friend);
+                            Friend friend = new Friend
+                            {
+                                FriendId = check,
+                                UserId = currentUserId
+                            };
+                            await _dal.AddAsync<Friend>(friend);
+                        }
                     }
                 }
-                else
-                {
-                    var name = inviteFriend.Email[i];
-                    int index = name.IndexOf('@');
-                    if (index > 0)
-                        name = name.Substring(0, index);
-                    var user = new ApplicationUser
-                    {
-                        UserName = inviteFriend.Email[i],
-                        Email = inviteFriend.Email[i],
-                        FirstName = name,
-                        LastName = inviteFriend.Email[i],
-                        Currency = "INR",
-                        PhoneNumber = "1111111111",
-                        IsRegistered = false
-                    };
-                    var addedUser = _userManager.CreateAsync(user, "Random@123");
-
-                    if (addedUser.Result.Succeeded)
-                    {
-                        await _db.SaveChangesAsync();
-                    }
-
-
-                    Friend friend = new Friend()
-                    {
-                        FriendId = user.Id,
-                        UserId = currentUserId
-                    };
-
-
-
-                    _db.Friends.Add(friend);
-
-                    //sending mail code
-
-                    string to = inviteFriend.Email[i]; //To address    
-                    string from = "splitwise2364@gmail.com"; //From address 
-                    string mailbody = "Hello there, you are invite to join splitwise, team splitwise :)";
-                    MailMessage message = new MailMessage(from, to);
-                    if (inviteFriend.Message != null)
-                        mailbody = inviteFriend.Message;
-
-                    message.Subject = "Invitation mail";
-                    message.Body = mailbody;
-                    message.BodyEncoding = Encoding.UTF8;
-                    message.IsBodyHtml = true;
-                    SmtpClient client = new SmtpClient("smtp.gmail.com", 587); //Gmail smtp    
-                    System.Net.NetworkCredential basicCredential1 = new
-                    System.Net.NetworkCredential("splitwise2364@gmail.com", "vjdjs@4021");
-                    client.EnableSsl = true;
-                    client.UseDefaultCredentials = false;
-                    client.Credentials = basicCredential1;
-
-                    // Disabling certificate validation 
-
-                    ServicePointManager.ServerCertificateValidationCallback =
-                        delegate (
-                            object s,
-                            X509Certificate certificate,
-                            X509Chain chain,
-                            SslPolicyErrors sslPolicyErrors
-                        ) {
-                            return true;
-                        };
-
-                    try
-                    {
-                        client.Send(message);
-                    }
-
-                    catch (Exception ex)
-                    {
-                        throw ex;
-                    }
-                }
+                
             }
             return "sent sucessfully";
+        }
+
+
+        public async Task RegisterNewFriends(InviteFriend inviteFriend, string currentUserId)
+        {
+            for (int i = 0; i < inviteFriend.Email.Count(); i++)
+            {
+                var currentUserEmail = await _dal.Where<ApplicationUser>(u => u.Id.Equals(currentUserId)).Select(s => s.Email).SingleAsync();
+
+                if (currentUserEmail.ToLower() != inviteFriend.Email[i].ToLower())
+                {
+                    var check = await _dal.Where<ApplicationUser>(u => u.Email.Equals(inviteFriend.Email[i].ToLower())).Select(s => s.Id).SingleOrDefaultAsync();
+
+                    if (check == null)
+                    {
+                        var name = inviteFriend.Email[i];
+                        int index = name.IndexOf('@');
+                        if (index > 0)
+                            name = name.Substring(0, index);
+                        var user = new ApplicationUser
+                        {
+                            UserName = inviteFriend.Email[i],
+                            Email = inviteFriend.Email[i],
+                            FirstName = name,
+                            LastName = inviteFriend.Email[i],
+                            Currency = "INR",
+                            PhoneNumber = "1111111111",
+                            IsRegistered = false
+                        };
+                        await _userManager.CreateAsync(user, "Random@123");
+
+                        string to = inviteFriend.Email[i]; //To address    
+                        string from = "splitwise2364@gmail.com"; //From address 
+                        string mailbody = "Hello there, you are invite to join splitwise, team splitwise :)";
+                        MailMessage message = new MailMessage(from, to);
+                        if (inviteFriend.Message != null)
+                            mailbody = inviteFriend.Message;
+
+                        message.Subject = "Invitation mail";
+                        message.Body = mailbody;
+                        message.BodyEncoding = Encoding.UTF8;
+                        message.IsBodyHtml = true;
+                        SmtpClient client = new SmtpClient("smtp.gmail.com", 587); //Gmail smtp    
+                        System.Net.NetworkCredential basicCredential1 = new
+                        System.Net.NetworkCredential("splitwise2364@gmail.com", "vjdjs@4021");
+                        client.EnableSsl = true;
+                        client.UseDefaultCredentials = false;
+                        client.Credentials = basicCredential1;
+
+                        // Disabling certificate validation 
+
+                        ServicePointManager.ServerCertificateValidationCallback =
+                            delegate (
+                                object s,
+                                X509Certificate certificate,
+                                X509Chain chain,
+                                SslPolicyErrors sslPolicyErrors
+                            ) {
+                                return true;
+                            };
+
+                        try
+                        {
+                            client.Send(message);
+                        }
+
+                        catch (Exception ex)
+                        {
+                            throw ex;
+                        }
+                    }
+                }
+
+            }
         }
 
         public async Task<List<ExpenseDetail>> GetFriendExpenseList(string friendId, string email)
@@ -171,10 +178,10 @@ namespace Splitwise.Repository.FriendRepository
             int flag = 0;
             List<string> expenseIdList = new List<string>();
             var user = await _userManager.FindByEmailAsync(email);
-            foreach (var expense in _db.Expenses)
+            foreach (var expense in await _dal.Get<Expense>())
             {
                 flag = 0;
-                foreach (var ledger in _db.Ledgers.Where(l => l.ExpenseId.Equals(expense.Id)))
+                foreach (var ledger in _dal.Where<Ledger>(l => l.ExpenseId.Equals(expense.Id)))
                 {
                     if (ledger.UserId.Equals(user.Id))
                     {
@@ -198,7 +205,7 @@ namespace Splitwise.Repository.FriendRepository
             {
                 if (expense.IsDeleted.Equals(false))
                 {
-                    var ledgers = _db.Ledgers.Where(l => l.ExpenseId.Equals(expense.Id));
+                    var ledgers = _dal.Where<Ledger>(l => l.ExpenseId.Equals(expense.Id));
                     var userIdLedger = ledgers.Select(l => l.UserId).Distinct();
 
                     List<ExpenseLedger> ExpenseLedgerList = new List<ExpenseLedger>();
@@ -221,7 +228,7 @@ namespace Splitwise.Repository.FriendRepository
 
                     List<CommentDetails> commentDetails = new List<CommentDetails>();
 
-                    var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
+                    var commentList = await _dal.Where<Comment>(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
                     //var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
 
                     foreach (var comment in commentList)
@@ -235,7 +242,7 @@ namespace Splitwise.Repository.FriendRepository
                         //};
 
                         CommentDetails commentDetail = _mapper.Map<CommentDetails>(comment);
-                        commentDetail.Name = await _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).SingleAsync();
+                        commentDetail.Name = await _dal.Where<ApplicationUser>(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).SingleAsync();
 
                         commentDetails.Add(commentDetail);
 
@@ -255,7 +262,7 @@ namespace Splitwise.Repository.FriendRepository
                     //};
 
                     ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
-                    expenseDetail.AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();
+                    expenseDetail.AddedBy = _dal.Where<ApplicationUser>(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();
                     expenseDetail.ExpenseLedgers = ExpenseLedgerList;
                     expenseDetail.Comments = commentDetails;
 
@@ -268,13 +275,13 @@ namespace Splitwise.Repository.FriendRepository
 
         public async Task<UserExpense> UserExpense(string userId)
         {
-            var expenseIdList = _db.Ledgers.Where(l => l.UserId.Equals(userId)).Select(l => l.ExpenseId).Distinct();
+            var expenseIdList = _dal.Where<Ledger>(l => l.UserId.Equals(userId)).Select(l => l.ExpenseId).Distinct();
             List<string> ledgerIdList = new List<string>();
             List<UserExpense> userExpenses = new List<UserExpense>();
             List<Ledger> ledgers = new List<Ledger>();
             foreach (var x in expenseIdList)
             {
-                ledgers = await _db.Ledgers.Where(l => l.ExpenseId.Equals(x)).ToListAsync();
+                ledgers = await _dal.Where<Ledger>(l => l.ExpenseId.Equals(x)).ToListAsync();
             }
             float sum = 0;
             foreach (var x in ledgers)
@@ -284,7 +291,7 @@ namespace Splitwise.Repository.FriendRepository
             }
             UserExpense userExpense = new UserExpense()
             {
-                Name = await _db.Users.Where(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleAsync(),
+                Name = await _dal.Where<ApplicationUser>(u => u.Id.Equals(userId)).Select(s => s.FirstName).SingleAsync(),
                 Amount = sum,
                 Id = userId
             };
@@ -294,8 +301,8 @@ namespace Splitwise.Repository.FriendRepository
 
         public async Task RemoveFriend(string friendId, string userId)
         {
-            var friendList = await _db.Friends.Where(f => (f.UserId.Equals(friendId) && f.FriendId.Equals(userId)) || (f.UserId.Equals(userId) && f.FriendId.Equals(friendId))).ToListAsync();
-            _db.Friends.RemoveRange(friendList);
+            var friendList = await _dal.Where<Friend>(f => (f.UserId.Equals(friendId) && f.FriendId.Equals(userId)) || (f.UserId.Equals(userId) && f.FriendId.Equals(friendId))).ToListAsync();
+            _dal.RemoveRange<Friend>(friendList);
         }
     }
 }
