@@ -18,14 +18,12 @@ namespace Splitwise.Repository.FriendRepository
 {
     public class FriendRepository : IFriendRepository
     {
-        private readonly SplitwiseDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IDataRepository _dal;
 
-        public FriendRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper, IDataRepository dal)
+        public FriendRepository(UserManager<ApplicationUser> userManager, IMapper mapper, IDataRepository dal)
         {
-            _db = db;
             _userManager = userManager;
             _mapper = mapper;
             _dal = dal;
@@ -46,14 +44,25 @@ namespace Splitwise.Repository.FriendRepository
                     friendListUserId.Add(friend.UserId);
                 }
             }
-            var friendListWithName = await _db.Users.Join(friendListUserId,
+            //var friendListWithName = await _db.Users.Join(friendListUserId,
+            //                                        u => u.Id,
+            //                                        f => f,
+            //                                        (u, f) => new
+            //                                        {
+            //                                            userId = f,
+            //                                            name = u.FirstName
+            //                                        }).ToListAsync();
+
+            var allUserList = await _dal.Get<ApplicationUser>();
+
+            var friendListWithName = allUserList.Join(friendListUserId,
                                                     u => u.Id,
                                                     f => f,
                                                     (u, f) => new
                                                     {
                                                         userId = f,
                                                         name = u.FirstName
-                                                    }).ToListAsync();
+                                                    }).ToList();
 
             foreach (var friend in friendListWithName)
             {
@@ -198,9 +207,12 @@ namespace Splitwise.Repository.FriendRepository
                 }
             }
             //var expenseIdList = _db.Ledgers.Where(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
-            var expenses = _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
+            var allExpenseList = await _dal.Get<Expense>();
+            var expenses = allExpenseList.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
-            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName }).Distinct();
+            var allLedgerList = await _dal.Get<Ledger>();
+            var allUserList = await _dal.Get<ApplicationUser>();
+            var userName = allLedgerList.Join(allUserList, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName }).Distinct();
             foreach (var expense in expenses)
             {
                 if (expense.IsDeleted.Equals(false))
@@ -221,7 +233,7 @@ namespace Splitwise.Repository.FriendRepository
                         //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
-                        expenseLedger.Name = await userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).SingleAsync();
+                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).Single();
 
                         ExpenseLedgerList.Add(expenseLedger);
                     }

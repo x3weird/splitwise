@@ -13,7 +13,7 @@ namespace Splitwise.DomainModel.Models
         public string LastName { get; set; }
         public string Currency { get; set; }
         public bool IsRegistered { get; set; }
-
+        public ICollection<GroupMember> GroupMembers { get; set; }
         #endregion
     }
 }

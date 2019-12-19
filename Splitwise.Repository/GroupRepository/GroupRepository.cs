@@ -14,14 +14,12 @@ namespace Splitwise.Repository.GroupRepository
 {
     public class GroupRepository : IGroupRepository
     {
-        private readonly SplitwiseDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IDataRepository _dal;
 
-        public GroupRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper, IDataRepository dal)
+        public GroupRepository(UserManager<ApplicationUser> userManager, IMapper mapper, IDataRepository dal)
         {
-            _db = db;
             _userManager = userManager;
             _mapper = mapper;
             _dal = dal;
@@ -29,11 +27,12 @@ namespace Splitwise.Repository.GroupRepository
 
         public async Task<List<UserNameWithId>> GetGroupList()
         {
-            List<UserNameWithId> query = await _db.Groups.Select(g => new UserNameWithId
+            var allGroupList = await _dal.Get<Group>();
+            List<UserNameWithId> query = allGroupList.Select(g => new UserNameWithId
             {
                 UserId = g.Id,
                 Name = g.Name
-            }).ToListAsync();
+            }).ToList();
 
             return query;
         }
@@ -135,9 +134,15 @@ namespace Splitwise.Repository.GroupRepository
         {
             Group gp = await _dal.Where<Group>(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefaultAsync();
 
+            var allGroupMemberList = await _dal.Get<GroupMember>();
+            var allUserList = await _dal.Get<ApplicationUser>();
+            
+            
+
             if (gp != null)
             {
-                var query = await _db.GroupMembers.Join(_db.Users,
+                
+                var query = allGroupMemberList.Join(allUserList,
                                                     g => g.UserId,
                                                     u => u.Id,
                                                     (g, u) => new
@@ -154,7 +159,7 @@ namespace Splitwise.Repository.GroupRepository
                                                             g.Id,
                                                             g.name,
                                                             g.email
-                                                        }).ToListAsync();
+                                                        }).ToList();
 
                 List<GroupUsers> groupUsersList = new List<GroupUsers>();
 
@@ -223,6 +228,9 @@ namespace Splitwise.Repository.GroupRepository
         public async Task<List<ExpenseDetail>> GetGroupExpenseList(string groupId, string email)
         {
             var user = await _userManager.FindByEmailAsync(email);
+            var allLedgerList = await _dal.Get<Ledger>();
+            var allExpenseList = await _dal.Get<Expense>();
+            var allUserList = await _dal.Get<ApplicationUser>();
             List<string> expenseIdList = new List<string>();
             var expenseList = _dal.Where<Ledger>(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
             foreach (var expenseId in expenseList)
@@ -233,9 +241,11 @@ namespace Splitwise.Repository.GroupRepository
                     expenseIdList.Add(expenseId);
                 }
             }
-            var expenses = _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
+            
+            var expenses = allExpenseList.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
-            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName }).Distinct();
+            
+            var userName = allLedgerList.Join(allUserList, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName }).Distinct();
             foreach (var expense in expenses)
             {
                 if (expense.IsDeleted.Equals(false))
@@ -256,7 +266,7 @@ namespace Splitwise.Repository.GroupRepository
                         //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
-                        expenseLedger.Name = await userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).SingleAsync();
+                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).Single();
 
                         ExpenseLedgerList.Add(expenseLedger);
                     }

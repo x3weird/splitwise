@@ -14,14 +14,12 @@ namespace Splitwise.Repository.ExpenseRepository
 {
     public class ExpenseRepository : IExpenseRepository
     {
-        private readonly SplitwiseDbContext _db;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly IMapper _mapper;
         private readonly IDataRepository _dal;
 
-        public ExpenseRepository(SplitwiseDbContext db, UserManager<ApplicationUser> userManager, IMapper mapper, IDataRepository dal)
+        public ExpenseRepository(UserManager<ApplicationUser> userManager, IMapper mapper, IDataRepository dal)
         {
-            _db = db;
             _userManager = userManager;
             _mapper = mapper;
             _dal = dal;
@@ -37,11 +35,15 @@ namespace Splitwise.Repository.ExpenseRepository
             var expenseIdList = _dal.Where<Ledger>(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
 
             //var expenses = await _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e).ToListAsync();
-
-            var expenses = await _db.Expenses.Join(expenseIdList, e => e.Id, x => x, (e, x) => e).ToListAsync();
+            List<Expense> allExpenseList = await _dal.Get<Expense>();
+            
+            var expenses = allExpenseList.Join(expenseIdList, e => e.Id, x => x, (e, x) => e).ToList();
 
             List<ExpenseDetail> ExpenseDetailList = new List<ExpenseDetail>();
-            var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName}).Distinct();
+            //var userName = _db.Ledgers.Join(_db.Users, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName}).Distinct();
+            var allLedgerList = await _dal.Get<Ledger>();
+            var allUserList = await _dal.Get<ApplicationUser>();
+            var userName = allLedgerList.Join(allUserList, l => l.UserId, u => u.Id, (l, u) => new { u.Id, Name = u.FirstName }).Distinct();
             foreach (var expense in expenses)
             {
                 if (expense.IsDeleted == false)
@@ -63,7 +65,7 @@ namespace Splitwise.Repository.ExpenseRepository
                         //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
-                        expenseLedger.Name = await userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).SingleAsync();
+                        expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).Single();
 
                         ExpenseLedgerList.Add(expenseLedger);
                     }
@@ -269,7 +271,8 @@ namespace Splitwise.Repository.ExpenseRepository
             //var expenseIdList = await _db.Ledgers.Where(l => l.UserId.Equals(currentUserId)).Select(s => s.ExpenseId).Distinct().ToListAsync();
             string currentUserId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
             var expenseIdList = await _dal.Where<Ledger>(l => l.UserId.Equals(currentUserId)).Select(s => s.ExpenseId).Distinct().ToListAsync();
-            var userIdList = await _db.Ledgers.Join(expenseIdList, l => l.ExpenseId, e => e, (l, e) => new { userId = l.UserId }).Distinct().ToListAsync();
+            List<Ledger> allLedgerList = await _dal.Get<Ledger>();
+            var userIdList = allLedgerList.Join(expenseIdList, l => l.ExpenseId, e => e, (l, e) => new { userId = l.UserId }).Distinct().ToList();
 
             List<UserExpense> userExpenseList = new List<UserExpense>();
             
@@ -376,7 +379,7 @@ namespace Splitwise.Repository.ExpenseRepository
                                 //};
 
                                 UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
-                                userExpense.Name = await _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
+                                userExpense.Name = await _dal.Where<ApplicationUser>(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleAsync();
 
                                 userExpenseList.Add(userExpense);
                             }
@@ -485,7 +488,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
             Activity activity = new Activity
             {
-                Log = await _dal.Where<ApplicationUser>(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).SingleAsync() + " Paid " + await _db.Users.Where(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).SingleAsync(),
+                Log = await _dal.Where<ApplicationUser>(u=>u.Id.Equals(settleUp.Payer)).Select(s=>s.FirstName).SingleAsync() + " Paid " + await _dal.Where<ApplicationUser>(u => u.Id.Equals(settleUp.Recipient)).Select(s => s.FirstName).SingleAsync(),
                 ActivityOn = "Expense",
                 ActivityOnId = expense.Id,
                 Date = DateTime.Now
