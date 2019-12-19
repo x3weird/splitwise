@@ -13,7 +13,6 @@ namespace Splitwise.Repository.GroupRepository
         Task<Group> AddGroup(GroupAdd groupAdd, string email);
         Task<GroupDetails> GetGroupDetails(string groupId);
         Task<List<UserExpense>> GroupUserExpense(string groupId, List<string> users);
-        Task<List<ExpenseDetail>> GetGroupExpenseList(string groupId, string email);
         Task RemoveGroup(string groupId);
     }
 

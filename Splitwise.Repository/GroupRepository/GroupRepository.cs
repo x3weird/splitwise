@@ -130,71 +130,7 @@ namespace Splitwise.Repository.GroupRepository
             
         }
 
-        public async Task<GroupDetails> GetGroupDetails(string groupId)
-        {
-            Group gp = await _dal.Where<Group>(g => g.Id.Equals(groupId) && g.IsDeleted.Equals(false)).SingleOrDefaultAsync();
-
-            var allGroupMemberList = await _dal.Get<GroupMember>();
-            var allUserList = await _dal.Get<ApplicationUser>();
-            
-            
-
-            if (gp != null)
-            {
-                
-                var query = allGroupMemberList.Join(allUserList,
-                                                    g => g.UserId,
-                                                    u => u.Id,
-                                                    (g, u) => new
-                                                    {
-                                                        Id = g.UserId,
-                                                        g.GroupId,
-                                                        name = u.FirstName + " " + u.LastName,
-                                                        email = u.Email
-                                                    })
-                                                    .Where(g => g.GroupId.Equals(groupId))
-                                                    .Select(
-                                                        g => new
-                                                        {
-                                                            g.Id,
-                                                            g.name,
-                                                            g.email
-                                                        }).ToList();
-
-                List<GroupUsers> groupUsersList = new List<GroupUsers>();
-
-                foreach (var q in query)
-                {
-                    //GroupUsers groupUsers = new GroupUsers
-                    //{
-                    //    Name = q.name,
-                    //    Email = q.email
-                    //};
-
-                    GroupUsers groupUsers = _mapper.Map<GroupUsers>(q);
-
-                    groupUsersList.Add(groupUsers);
-                }
-
-                //GroupDetails groupDetails = new GroupDetails
-                //{
-                //    GroupId = groupId,
-                //    GroupName = gp.Name,
-                //    AddedBy = gp.AddedBy,
-                //    CreatedOn = gp.CreatedOn,
-                //    SimplifyDebts = gp.SimplifyDebts,
-                //    Users = groupUsersList
-                //};
-
-                GroupDetails groupDetails = _mapper.Map<GroupDetails>(gp);
-
-                return groupDetails;
-            }
-            else
-            {
-                return null;
-            }
-        }
+        
 
         public async Task<List<UserExpense>> GroupUserExpense(string groupId, List<string> users)
         {

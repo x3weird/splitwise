@@ -65,24 +65,6 @@ namespace Splitwise.Core.ApiControllers
             }
         }
 
-       
-
-        [HttpGet]
-        [Route("{groupId}/edit")]
-        public async Task<object> GetGroupDetails(string groupId)
-        {
-            var groupEdit = _unitOfWork.Group.GetGroupDetails(groupId);
-            if (groupEdit != null)
-            {
-                await _unitOfWork.Commit();
-                return Ok(groupEdit);
-            }
-            else
-            {
-                return NotFound();
-            }
-        }
-
         [HttpPost]
         [Route("{groupId}/UserExpense")]
         public async Task<object> GroupUserExpense(string groupId, List<string> users)
