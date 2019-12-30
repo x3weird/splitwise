@@ -24,6 +24,7 @@ namespace Splitwise.Repository.ExpenseRepository
             _mapper = mapper;
             _dal = dal;
         }
+
         public async Task<List<ExpenseDetail>> GetExpenseList(string email)
         {
             //current user

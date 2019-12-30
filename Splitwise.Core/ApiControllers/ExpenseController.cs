@@ -25,8 +25,10 @@ namespace Splitwise.Core.ApiControllers
         [Route("addExpense")]
         public async Task<object> AddExpense(AddExpense expense)
         {
-            InviteFriend inviteFriend = new InviteFriend();
-            inviteFriend.Email = expense.EmailList;
+            InviteFriend inviteFriend = new InviteFriend
+            {
+                Email = expense.EmailList
+            };
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
             await _unitOfWork.Friend.RegisterNewFriends(inviteFriend, currentUserId);
