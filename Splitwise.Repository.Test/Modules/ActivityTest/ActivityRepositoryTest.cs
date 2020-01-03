@@ -24,76 +24,69 @@ namespace Splitwise.Repository.Test.Modules.ActivityTest
         private Mock<IDataRepository> _dataRepositoryMock { get; }
         private Mock<UserManager<ApplicationUser>> _userManagerMock { get; }
         private IMapper _mapperMock { get; }
-        private IGroupRepository _groupRepository { get; }
+        private IActivityRepository _activityRepository { get; }
 
         public ActivityRepositoryTest(Initialize initialize)
         {
             _dataRepositoryMock = initialize.ServiceProvider.GetService<Mock<IDataRepository>>();
             _mapperMock = initialize.ServiceProvider.GetService<IMapper>();
             _userManagerMock = initialize.ServiceProvider.GetService<Mock<UserManager<ApplicationUser>>>();
-            _groupRepository = initialize.ServiceProvider.GetService<IGroupRepository>();
+            _activityRepository = initialize.ServiceProvider.GetService<IActivityRepository>();
         }
 
         [Fact]
-        public async Task GetGroupListAsync()
+        public void ActivityList()
         {
-            List<Group> list = new List<Group>()
-            {
-                new Group()
+            //Arange
+            string userId= "7800b494-9cf4-44ca-ab1a-cef1bcc056b4";
+            List<Activity> list = new List<Activity>() {
+                new Activity
                 {
-                    AddedBy = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4",
-                    Name = "lunch",
-                    Id = "ba2c34a3-c0da-42c2-9e93-53d1bd307f45",
-                    CreatedOn = new DateTime(2019, 6, 12, 15, 3, 27),
-                    IsDeleted = false,
-                    SimplifyDebts = false
+                    Id = "11acd072-5938-4ffd-8029-09df732689b7",
+                    Date = new DateTime(2019, 18, 12, 12, 3, 53),
+                    ActivityOn = "Expense",
+                    ActivityOnId = "dc3e2e99-379b-41d6-b8a7-7caf0e3710a6",
+                    Log = "arjun added check"
                 },
-                new Group()
+                new Activity
                 {
-                    AddedBy = null,
-                    Name = "trip",
-                    Id = "6de3c332-3315-4a95-bbbc-c824ebd07360",
-                    CreatedOn = new DateTime(2019, 6, 12, 15, 19, 28),
-                    IsDeleted = false,
-                    SimplifyDebts = false
+                    Id = "20546eec-0c22-4008-9636-c017c42b0b05",
+                    Date = new DateTime(0000, 00, 00, 00, 0, 00),
+                    ActivityOn = "Expense",
+                    ActivityOnId = "722dd145-aae9-4e15-855d-5948d67b9b0b",
+                    Log = "arjun Paid harshil"
                 }
             };
 
-            List<UserNameWithId> userNameWithIds = new List<UserNameWithId>()
+            var expected = new List<ActivityDetails>()
             {
-                new UserNameWithId()
+                new ActivityDetails
                 {
-                    Name = "lunch",
-                    UserId = "ba2c34a3-c0da-42c2-9e93-53d1bd307f45"
+                    Id = "",
+                    ActivityOn = "",
+                    ActivityOnId = "",
+                    Log = "",
+                    Log2 = "",
+                    Date = new DateTime(0000, 00, 00, 00, 0, 00)
                 },
-                new UserNameWithId()
+                new ActivityDetails
                 {
-                    Name = "trip",
-                    UserId = "6de3c332-3315-4a95-bbbc-c824ebd07360"
+                    Id = "",
+                    ActivityOn = "",
+                    ActivityOnId = "",
+                    Log = "",
+                    Log2 = "",
+                    Date = new DateTime(0000, 00, 00, 00, 0, 00)
                 }
             };
 
+            //Act
+            _dataRepositoryMock.Setup(x => x.Get<Activity>()).Returns(Task.FromResult(list));
+            _dataRepositoryMock.Setup(x=>x.Where(It.IsAny<Expression<Func<, bool>>>()))
+            _activityRepository.ActivityList(userId);
 
-            _dataRepositoryMock.Setup(x => x.Get<Group>()).Returns(Task.FromResult(list));
-
-            //_dataRepositoryMock.Setup(x => x.Where<Group>()).Returns();
-
-            var check = await _groupRepository.GetGroupList();
-    
-            Assert.NotNull(check);
-            Assert.Equal(check, userNameWithIds);
+            //Assert
+            Assert.Equal(1,1);
         }
     }
 }
-
-////Arrange
-//List<ActivityDetails> activityDetails = new List<ActivityDetails>();
-//var mock = new Mock<IDataRepository>();
-////mock.Setup(x=>x.Activity.ActivityList(userId)).Returns(Task.FromResult(activityDetails));
-//mock.Setup(x => x.Where<Activity>(It.IsAny()));
-//            //Console.WriteLine(mock.Object);
-//            //Act
-//            List<ActivityDetails> actual = activityDetails;
-
-////Assert
-//Assert.Equal("7800b494-9cf4-44ca-ab1a-cef1bcc056b4", userId);
