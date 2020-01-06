@@ -11,18 +11,21 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
+using System.Linq.Expressions;
+using System.Linq;
+using MockQueryable.Moq;
 
 namespace Splitwise.Repository.Test.Modules.GroupTest
 {
     [Collection("Register Dependency")]
-    public class GroupRepository
+    public class GroupRepositoryTest
     {
         private Mock<IDataRepository> _dataRepositoryMock { get; }
         private Mock<UserManager<ApplicationUser>> _userManagerMock { get; }
         private IMapper _mapperMock { get; }
         private IGroupRepository _groupRepository { get; }
 
-        public GroupRepository(Initialize initialize)
+        public GroupRepositoryTest(Initialize initialize)
         {
             _dataRepositoryMock = initialize.ServiceProvider.GetService<Mock<IDataRepository>>();
             _mapperMock = initialize.ServiceProvider.GetService<IMapper>();
@@ -79,26 +82,28 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
             check.TrimExcess();
             userNameWithIds.TrimExcess();
             Assert.NotNull(check);
-
-            var y = 1;
-            if (userNameWithIds.Equals(check))
-            {
-                y = 2;
-            }
-            else
-            {
-                y = 3;
-            }
-
             Assert.Equal(userNameWithIds.Count, check.Count);
             //Assert.True(check.Equals(userNameWithIds));
         }
 
         [Fact]
-        public async Task AddGroupMembers()
+        public async Task AddGroup()
         {
             //Arrange
+
+            List<ApplicationUser> applicationUsers = new List<ApplicationUser>() {
+                new ApplicationUser
+                {
+                    Email="arjun@gmail.com",
+                    Id="7800b494-9cf4-44ca-ab1a-cef1bcc056b4"
+                }
+            };
             
+            //Act
+            _dataRepositoryMock.Setup(x=>x.Where(It.IsAny<Expression<Func<ApplicationUser, bool>>>())).Returns(applicationUsers.AsQueryable().BuildMock().Object);
+            
+
+            //Assert
         }
     }
 }
