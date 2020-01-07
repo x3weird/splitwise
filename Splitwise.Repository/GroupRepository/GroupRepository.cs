@@ -43,11 +43,10 @@ namespace Splitwise.Repository.GroupRepository
             var query = await _dal.Where<Group>(g => g.Name.Equals(groupAdd.Name)).SingleOrDefaultAsync();
             if (query == null)
             {
-                
                 foreach (var x in groupAdd.Users)
                 {
                     var User = await _dal.Where<ApplicationUser>(u=>u.Email.Equals(x.Email.ToLower())).SingleOrDefaultAsync();
-                    if (User != null)
+                    if (User != null && currentUserId != User.Id)
                     {
                         var checkFriend = await _dal.Where<Friend>(f => (f.FriendId.Equals(User.Id) && f.UserId.Equals(currentUserId)) || (f.FriendId.Equals(currentUserId) && f.UserId.Equals(User.Id))).SingleOrDefaultAsync();
 
@@ -125,7 +124,7 @@ namespace Splitwise.Repository.GroupRepository
                 return group;
             } else
             {
-                return query;
+                return null;
             }
             
         }
