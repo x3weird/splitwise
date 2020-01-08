@@ -41,12 +41,12 @@ namespace Splitwise.Repository.GroupRepository
         {
             var currentUserId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(email.ToLower())).Select(s=>s.Id).SingleAsync();
             var query = await _dal.Where<Group>(g => g.Name.Equals(groupAdd.Name)).SingleOrDefaultAsync();
-            if (query == null)
+            if (query != null)
             {
                 foreach (var x in groupAdd.Users)
                 {
                     var User = await _dal.Where<ApplicationUser>(u=>u.Email.Equals(x.Email.ToLower())).SingleOrDefaultAsync();
-                    if (User != null && currentUserId != User.Id)
+                    if (User != null)
                     {
                         var checkFriend = await _dal.Where<Friend>(f => (f.FriendId.Equals(User.Id) && f.UserId.Equals(currentUserId)) || (f.FriendId.Equals(currentUserId) && f.UserId.Equals(User.Id))).SingleOrDefaultAsync();
 
@@ -192,13 +192,6 @@ namespace Splitwise.Repository.GroupRepository
 
                     foreach (var ledger in ledgers)
                     {
-                        //ExpenseLedger expenseLedger = new ExpenseLedger
-                        //{
-                        //    UserId = ledger.UserId,
-                        //    Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
-                        //    Paid = ledger.CreditedAmount,
-                        //    Owes = ledger.DebitedAmount
-                        //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
                         expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).Single();
@@ -209,18 +202,10 @@ namespace Splitwise.Repository.GroupRepository
                     List<CommentDetails> commentDetails = new List<CommentDetails>();
 
                     var commentList = await _dal.Where<Comment>(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
-                    //var commentList = await _db.Comments.Where(c => c.ExpenseId.Equals(expense.Id)).ToListAsync();
-
+                    
                     foreach (var comment in commentList)
                     {
-                        //CommentDetails commentDetail = new CommentDetails
-                        //{
-                        //    Id = comment.Id,
-                        //    Content = comment.CommentData,
-                        //    UserId = comment.UserId,
-                        //    Name = await _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefaultAsync()
-                        //};
-
+                        
                         CommentDetails commentDetail = _mapper.Map<CommentDetails>(comment);
                         commentDetail.Name = await _dal.Where<ApplicationUser>(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).SingleAsync();
 
