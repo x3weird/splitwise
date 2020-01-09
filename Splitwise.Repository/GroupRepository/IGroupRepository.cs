@@ -11,7 +11,6 @@ namespace Splitwise.Repository.GroupRepository
         Task<List<UserNameWithId>> GetGroupList();
         Task<int> AddGroupMembers(GroupAdd groupAdd, string email, Group group);
         Task<Group> AddGroup(GroupAdd groupAdd, string email);
-        Task<List<UserExpense>> GroupUserExpense(string groupId, List<string> users);
         Task<List<ExpenseDetail>> GetGroupExpenseList(string groupId, string email);
         Task RemoveGroup(string groupId);
     }

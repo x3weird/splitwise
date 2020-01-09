@@ -12,7 +12,7 @@ namespace Splitwise.Repository.CommentRepository
 {
     public class CommentRepository : ICommentRepository
     {
-        private readonly SplitwiseDbContext _db;
+       
         private readonly IMapper _mapper;
         private readonly IDataRepository _dal;
 

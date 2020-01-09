@@ -456,7 +456,7 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
                 new ApplicationUser
                 {
                     Email="arjun@gmail.com",
-                    Id="7800b494-9cf4-44ca-ab1a-cef1bcc056b4"
+                    Id="pl, "
                 }
             };
 
@@ -474,6 +474,18 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
 
             string groupId = "bd01eff7-c654-4762-8351-a65f3c10346d";
             string email = "arjun@gmail.com";
+
+            List<ExpenseLedger> expenseLedger = new List<ExpenseLedger>()
+            {
+                new ExpenseLedger()
+                {
+                    Name = null,
+                    Owes = -5,
+                    Paid = 0,
+                    UserId = "82b21620-42b5-4529-8087-331b8b896172"
+                }
+            };
+
             List<ExpenseDetail> expected = new List<ExpenseDetail>()
             {
                 new ExpenseDetail()
@@ -487,15 +499,11 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
                     GroupId="",
                     GroupName="",
                     Note="",
-                    ExpenseLedgers= { new ExpenseLedger {
-                        Name=null,
-                        Owes =-5,
-                        Paid=0,
-                        UserId ="82b21620-42b5-4529-8087-331b8b896172"
-                    } },
+                    ExpenseLedgers= expenseLedger,
                     Comments= {}
                 }
             };
+
             //Act
             _dataRepositoryMock.Setup(x => x.Get<Ledger>()).Returns(Task.FromResult(ledgers));
             _dataRepositoryMock.Setup(x => x.Get<Expense>()).Returns(Task.FromResult(expenses));
@@ -503,12 +511,83 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<Ledger, bool>>>())).Returns(ledgers.AsQueryable().BuildMock().Object);
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<GroupExpense, bool>>>()))
                 .Returns(groupExpenses.AsQueryable().BuildMock().Object);
+
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<ApplicationUser, bool>>>())).Returns(user.AsQueryable().BuildMock().Object);
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<Comment, bool>>>())).Returns(comments.AsQueryable().BuildMock().Object);
 
             var actual = await _groupRepository.GetGroupExpenseList(groupId, email);
+
             //Assert
             Assert.NotEmpty(actual);
+            Assert.Equal(actual.Count(), expected.Count());
+        }
+
+        [Fact]
+        public async Task RemoveGroup()
+        {
+            //Arrange
+            List<GroupMember> groupMembers = new List<GroupMember>()
+            {
+                new GroupMember()
+                {
+                    Id="9c189adb-c0fd-426b-969a-16569441b0f2",
+                    GroupId = "bd01eff7-c654-4762-8351-a65f3c10346d",
+                    UserId = "82b21620-42b5-4529-8087-331b8b896172"
+                },
+                new GroupMember()
+                {
+                    Id="7e193cke-v0bj-126b-909a-12985349b0v5",
+                    GroupId = "bd01eff7-c654-4762-8351-a65f3c10346d",
+                    UserId = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4"
+                }
+            };
+
+            List<GroupExpense> groupExpenses = new List<GroupExpense>()
+            {
+                new GroupExpense()
+                {
+                    Id = "58dfdc20-f609-4c36-b903-e35e4739a334",
+                    ExpenseId = "f2ddd4fd-bd9d-4bd1-8ed3-87ae699cee62",
+                    GroupId = "bd01eff7-c654-4762-8351-a65f3c10346d"
+                }
+            };
+
+            List<Group> groups = new List<Group>()
+            {
+                new Group()
+                {
+                    Id = "bd01eff7-c654-4762-8351-a65f3c10346d",
+                    AddedBy = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4",
+                    CreatedOn = new DateTime(2020,01,08,18,08,34),
+                    Name = "check",
+                    SimplifyDebts = false,
+                    IsDeleted = false
+                }
+            };
+
+            Group group = new Group()
+            {
+                Id = "bd01eff7-c654-4762-8351-a65f3c10346d",
+                AddedBy = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4",
+                CreatedOn = new DateTime(2020, 01, 08, 18, 08, 34),
+                Name = "check",
+                SimplifyDebts = false,
+                IsDeleted = false
+            };
+
+            string groupId = "bd01eff7-c654-4762-8351-a65f3c10346d";
+
+            //Act
+            _dataRepositoryMock.Setup(x=>x.Where(It.IsAny<Expression<Func<GroupMember ,bool>>>())).Returns(groupMembers.AsQueryable().BuildMock().Object);
+            _dataRepositoryMock.Setup(x=>x.Where(It.IsAny<Expression<Func<GroupExpense ,bool>>>())).Returns(groupExpenses.AsQueryable().BuildMock().Object);
+            _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<Group, bool>>>())).Returns(groups.AsQueryable().BuildMock().Object);
+            _dataRepositoryMock.Setup(x => x.Remove(group));
+            await _groupRepository.RemoveGroup(groupId);
+
+            //Assert
+            _dataRepositoryMock.Verify(x => x.RemoveRange(It.IsAny<List<GroupMember>>()), Times.Once);
+            _dataRepositoryMock.Verify(x => x.RemoveRange(It.IsAny<List<GroupExpense>>()), Times.Once);
+            _dataRepositoryMock.Verify(x => x.Remove(It.IsAny<Group>()), Times.Once);
         }
     }
 }

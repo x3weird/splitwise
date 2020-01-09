@@ -29,7 +29,7 @@ namespace Splitwise.Core.ApiControllers
 
         [HttpDelete]
         [Route("{groupId}")]
-        public async Task<object> DeleteFriend(string groupId)
+        public async Task<object> DeleteGroup(string groupId)
         {
             await _unitOfWork.Group.RemoveGroup(groupId);
             await _unitOfWork.Commit();
@@ -66,13 +66,5 @@ namespace Splitwise.Core.ApiControllers
             }
         }
 
-        [HttpPost]
-        [Route("{groupId}/UserExpense")]
-        public async Task<object> GroupUserExpense(string groupId, List<string> users)
-        {
-            List<UserExpense> userExpenses = await _unitOfWork.Group.GroupUserExpense(groupId, users);
-            await _unitOfWork.Commit();
-            return Ok(userExpenses);
-        }
     }
 }
