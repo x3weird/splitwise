@@ -8,4 +8,3 @@ C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcor
 C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.AssemblyInfo.cs
 C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.dll
 C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.pdb
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.csprojAssemblyReference.cache

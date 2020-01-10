@@ -456,7 +456,7 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
                 new ApplicationUser
                 {
                     Email="arjun@gmail.com",
-                    Id="pl, "
+                    Id="7800b494-9cf4-44ca-ab1a-cef1bcc056b4"
                 }
             };
 

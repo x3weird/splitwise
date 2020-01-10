@@ -185,7 +185,6 @@ namespace Splitwise.Repository.ExpenseRepository
                             ledger.DebitedAmount = 0 - p.Amount;
                             
                         }
-
                     }
                 }
 
@@ -200,7 +199,10 @@ namespace Splitwise.Repository.ExpenseRepository
                     activityUser.Log = await _dal.Where<ApplicationUser>(u => u.Id.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " gets back ₹" + ledger.DebitedAmount;
                     activityUser.ActivityUserId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(item.ToLower())).Select(s => s.Id).SingleAsync();
                     activityUserList.Add(activityUser);
-                } else
+                }
+
+                else
+
                 {
                     ActivityUser activityUser = _mapper.Map<ActivityUser>(activity);
                     //activityUser.Log = await _db.Users.Where(u => u.Id.Equals(ledger.UserId.ToLower())).Select(s => s.FirstName).SingleAsync() + " owe ₹" + ledger.DebitedAmount;
@@ -210,6 +212,7 @@ namespace Splitwise.Repository.ExpenseRepository
                     activityUser.Id = null;
                     activityUserList.Add(activityUser);
                 }
+
                 ledgerList.Add(ledger);
             }
             await _dal.AddRangeAsync<ActivityUser>(activityUserList);
