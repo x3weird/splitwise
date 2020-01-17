@@ -44,14 +44,6 @@ namespace Splitwise.Repository.FriendRepository
                     friendListUserId.Add(friend.UserId);
                 }
             }
-            //var friendListWithName = await _db.Users.Join(friendListUserId,
-            //                                        u => u.Id,
-            //                                        f => f,
-            //                                        (u, f) => new
-            //                                        {
-            //                                            userId = f,
-            //                                            name = u.FirstName
-            //                                        }).ToListAsync();
 
             var allUserList = await _dal.Get<ApplicationUser>();
 
@@ -224,13 +216,6 @@ namespace Splitwise.Repository.FriendRepository
 
                     foreach (var ledger in ledgers)
                     {
-                        //ExpenseLedger expenseLedger = new ExpenseLedger
-                        //{
-                        //    UserId = ledger.UserId,
-                        //    Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).FirstOrDefault(),
-                        //    Paid = ledger.CreditedAmount,
-                        //    Owes = ledger.DebitedAmount
-                        //};
 
                         ExpenseLedger expenseLedger = _mapper.Map<ExpenseLedger>(ledger);
                         expenseLedger.Name = userName.Where(u => u.Id.Equals(ledger.UserId)).Select(s => s.Name).Single();
@@ -245,13 +230,6 @@ namespace Splitwise.Repository.FriendRepository
 
                     foreach (var comment in commentList)
                     {
-                        //CommentDetails commentDetail = new CommentDetails
-                        //{
-                        //    Id = comment.Id,
-                        //    Content = comment.CommentData,
-                        //    UserId = comment.UserId,
-                        //    Name = _db.Users.Where(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).FirstOrDefault()
-                        //};
 
                         CommentDetails commentDetail = _mapper.Map<CommentDetails>(comment);
                         commentDetail.Name = await _dal.Where<ApplicationUser>(u => u.Id.Equals(comment.UserId)).Select(s => s.FirstName).SingleAsync();
@@ -260,18 +238,6 @@ namespace Splitwise.Repository.FriendRepository
 
                         commentDetails.Add(commentDetail);
                     }
-
-                    //ExpenseDetail expenseDetail = new ExpenseDetail
-                    //{
-                    //    ExpenseLedgers = ExpenseLedgerList,
-                    //    AddedBy = _db.Users.Where(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault(),
-                    //    Amount = expense.Amount,
-                    //    ExpenseId = expense.Id,
-                    //    CreatedOn = expense.CreatedOn,
-                    //    ExpenseType = expense.ExpenseType,
-                    //    Note = expense.Note,
-                    //    Description = expense.Description
-                    //};
 
                     ExpenseDetail expenseDetail = _mapper.Map<ExpenseDetail>(expense);
                     expenseDetail.AddedBy = _dal.Where<ApplicationUser>(u => u.Id.Equals(expense.AddedBy)).Select(s => s.FirstName).FirstOrDefault();

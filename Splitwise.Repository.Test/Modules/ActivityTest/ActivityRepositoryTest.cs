@@ -24,15 +24,12 @@ namespace Splitwise.Repository.Test.Modules.ActivityTest
     public class ActivityRepositoryTest
     {
         private Mock<IDataRepository> _dataRepositoryMock { get; }
-        private Mock<UserManager<ApplicationUser>> _userManagerMock { get; }
-        private IMapper _mapperMock { get; }
         private IActivityRepository _activityRepository { get; }
 
         public ActivityRepositoryTest(Initialize initialize)
         {
             _dataRepositoryMock = initialize.ServiceProvider.GetService<Mock<IDataRepository>>();
-            _mapperMock = initialize.ServiceProvider.GetService<IMapper>();
-            _userManagerMock = initialize.ServiceProvider.GetService<Mock<UserManager<ApplicationUser>>>();
+            
             _activityRepository = initialize.ServiceProvider.GetService<IActivityRepository>();
         }
 

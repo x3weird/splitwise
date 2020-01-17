@@ -21,16 +21,15 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
     public class GroupRepositoryTest
     {
         private Mock<IDataRepository> _dataRepositoryMock { get; }
-        private Mock<UserManager<ApplicationUser>> _userManagerMock { get; }
-        private IMapper _mapperMock { get; }
+        
         private IGroupRepository _groupRepository { get; }
 
         public GroupRepositoryTest(Initialize initialize)
         {
             _dataRepositoryMock = initialize.ServiceProvider.GetService<Mock<IDataRepository>>();
-            _mapperMock = initialize.ServiceProvider.GetService<IMapper>();
-            _userManagerMock = initialize.ServiceProvider.GetService<Mock<UserManager<ApplicationUser>>>();
+            
             _groupRepository = initialize.ServiceProvider.GetService<IGroupRepository>();
+            _dataRepositoryMock.Reset();
         }
 
         [Fact]

@@ -21,15 +21,12 @@ namespace Splitwise.Repository.Test.Modules.CommentTest
     public class CommentRepositoryTest
     {
         private Mock<IDataRepository> _dataRepositoryMock { get; }
-        private Mock<UserManager<ApplicationUser>> _userManagerMock { get; }
-        private IMapper _mapperMock { get; }
         private ICommentRepository _commentRepository { get; }
 
         public CommentRepositoryTest(Initialize initialize)
         {
             _dataRepositoryMock = initialize.ServiceProvider.GetService<Mock<IDataRepository>>();
-            _mapperMock = initialize.ServiceProvider.GetService<IMapper>();
-            _userManagerMock = initialize.ServiceProvider.GetService<Mock<UserManager<ApplicationUser>>>();
+            
             _commentRepository = initialize.ServiceProvider.GetService<ICommentRepository>();
         }
 

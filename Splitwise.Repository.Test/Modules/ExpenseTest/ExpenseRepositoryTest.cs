@@ -31,6 +31,43 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
             _mapperMock = initialize.ServiceProvider.GetService<IMapper>();
             _userManagerMock = initialize.ServiceProvider.GetService<Mock<UserManager<ApplicationUser>>>();
             _expenseRepository = initialize.ServiceProvider.GetService<IExpenseRepository>();
+            _dataRepositoryMock.Reset();
+        }
+
+        [Fact]
+        public async Task AddSettleUpExpense()
+        {
+            //Arrange
+
+            string email = "arjun@gmail.com";
+
+            List<ApplicationUser> user = new List<ApplicationUser>() {
+                new ApplicationUser
+                {
+                    Email="arjun@gmail.com",
+                    Id="7800b494-9cf4-44ca-ab1a-cef1bcc056b4",
+                    FirstName="Arjun"
+                }
+            };
+
+            SettleUp settleUp = new SettleUp()
+            {
+                Amount = 100,
+                Date = new DateTime(2020, 1, 1, 01, 01, 01),
+                Group = null,
+                Note = null,
+                Payer = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4",
+                Recipient = "82b21620-42b5-4529-8087-331b8b896172"
+            };
+
+            
+
+            //Act
+
+            _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<ApplicationUser, bool>>>())).Returns(user.AsQueryable().BuildMock().Object);
+            await _expenseRepository.AddSettleUpExpense(settleUp, email);
+            //Asert
+            _dataRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Expense>()), Times.Once);
         }
 
         [Fact]
@@ -443,38 +480,6 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
             Assert.NotNull(actual);
         }
 
-        [Fact]
-        public  async Task AddSettleUpExpense()
-        {
-            //Arrange
-
-            string email = "arjun@gmail.com";
-
-            List<ApplicationUser> user = new List<ApplicationUser>() {
-                new ApplicationUser
-                {
-                    Email="arjun@gmail.com",
-                    Id="7800b494-9cf4-44ca-ab1a-cef1bcc056b4",
-                    FirstName="Arjun"
-                }
-            };
-
-            SettleUp settleUp = new SettleUp()
-            {
-                Amount = 100,
-                Date = new DateTime(2020,1,1,01,01,01),
-                Group = null,
-                Note = null,
-                Payer = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4",
-                Recipient = "82b21620-42b5-4529-8087-331b8b896172"
-            };
-
-            //Act
-
-            _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<ApplicationUser, bool>>>())).Returns(user.AsQueryable().BuildMock().Object);
-            await _expenseRepository.AddSettleUpExpense(settleUp, email);
-            //Asert
-            _dataRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Expense>()), Times.Once);
-        }
+        
     }
 }
