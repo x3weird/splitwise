@@ -40,7 +40,6 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
             //Arrange
 
             string email = "arjun@gmail.com";
-
             List<ApplicationUser> user = new List<ApplicationUser>() {
                 new ApplicationUser
                 {
@@ -63,9 +62,9 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
             
 
             //Act
-
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<ApplicationUser, bool>>>())).Returns(user.AsQueryable().BuildMock().Object);
             await _expenseRepository.AddSettleUpExpense(settleUp, email);
+            
             //Asert
             _dataRepositoryMock.Verify(x => x.AddAsync(It.IsAny<Expense>()), Times.Once);
         }
@@ -179,7 +178,8 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
                 }
             };
 
-            List<Expense> expenses = new List<Expense>(){
+            List<Expense> expenses = new List<Expense>()
+            {
                 new Expense()
                 {
                     Id = "b36bc83e-50c0-41b9-a965-92820a00fca7",
@@ -193,7 +193,8 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
                 }
             };
 
-            List<ApplicationUser> users = new List<ApplicationUser>() {
+            List<ApplicationUser> users = new List<ApplicationUser>()
+            {
                 new ApplicationUser
                 {
                     Email="arjun@gmail.com",
@@ -206,7 +207,8 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
                 }
             };
 
-            List<ApplicationUser> addedUser = new List<ApplicationUser>() {
+            List<ApplicationUser> addedUser = new List<ApplicationUser>()
+            {
                 new ApplicationUser
                 {
                     Email="arjun@gmail.com",
@@ -236,7 +238,8 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
         public async Task DeleteExpense()
         {
             //Arrange
-            List<Expense> expenses = new List<Expense>(){
+            List<Expense> expenses = new List<Expense>()
+            {
                 new Expense()
                 {
                     Id = "f2ddd4fd-bd9d-4bd1-8ed3-87ae699cee62",
@@ -260,7 +263,8 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
                 }
             };
 
-            List<ApplicationUser> user = new List<ApplicationUser>() {
+            List<ApplicationUser> user = new List<ApplicationUser>()
+            {
                 new ApplicationUser
                 {
                     Email="arjun@gmail.com",
@@ -272,11 +276,13 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
             string expenseId = "f2ddd4fd-bd9d-4bd1-8ed3-87ae699cee62";
             string currentUserId = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4";
             int expected = 1;
+
             //Act
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<Expense, bool>>>())).Returns(expenses.AsQueryable().BuildMock().Object);
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<GroupExpense, bool>>>())).Returns(groupExpenses.AsQueryable().BuildMock().Object);
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<ApplicationUser, bool>>>())).Returns(user.AsQueryable().BuildMock().Object);
             var actual = await _expenseRepository.DeleteExpense(expenseId, currentUserId);
+            
             //Assert
             _dataRepositoryMock.Verify(x=>x.AddAsync(It.IsAny<Activity>()), Times.Once);
             Assert.Equal(actual, expected);
@@ -310,17 +316,23 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
             string expenseId = "f2ddd4fd-bd9d-4bd1-8ed3-87ae699cee62";
             string currentUserId = "7800b494-9cf4-44ca-ab1a-cef1bcc056b4";
             int expected = 0;
+
             //Act
+
             _dataRepositoryMock.Setup(x => x.Where(It.IsAny<Expression<Func<Expense, bool>>>())).Returns(expenses.AsQueryable().BuildMock().Object);
             var actual = await _expenseRepository.DeleteExpense(expenseId, currentUserId);
+
             //Assert
+
             Assert.Equal(actual,expected);
         }
 
         [Fact]
         public async Task AddExpenseInLedger()
         {
+            
             //Arrange
+
             List<ApplicationUser> applicationUser1 = new List<ApplicationUser>()
             {
                 new ApplicationUser()
@@ -331,6 +343,7 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
                 },
                 
             };
+
             List<ApplicationUser> applicationUser2 = new List<ApplicationUser>()
             {
                 new ApplicationUser()
@@ -340,6 +353,7 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
                     Email = "abhi@gmail.com"
                 },
             };
+
             List<UserExpenseDetail> ledgers = new List<UserExpenseDetail>()
             {
                 new UserExpenseDetail()
@@ -362,9 +376,12 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
                     Email = "arjun@gmail.com"
                 }
             };
-            List<string> emails = new List<string>();
-            emails.Add("arjun@gmail.com");
-            emails.Add("abhi@gmail.com");
+
+            List<string> emails = new List<string>
+            {
+                "arjun@gmail.com",
+                "abhi@gmail.com"
+            };
 
             AddExpense addExpense = new AddExpense()
             {
@@ -479,7 +496,5 @@ namespace Splitwise.Repository.Test.Modules.ExpenseRepositoryTest
             _dataRepositoryMock.Verify(x=>x.AddAsync(It.IsAny<Expense>()), Times.Once);
             Assert.NotNull(actual);
         }
-
-        
     }
 }

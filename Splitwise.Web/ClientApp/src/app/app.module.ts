@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { HttpClientModule, HTTP_INTERCEPTORS } from '@angular/common/http';
 import { RouterModule } from '@angular/router';
-
 import { AppComponent } from './app.component';
 import { NavMenuComponent } from './nav-menu/nav-menu.component';
 import { HomeComponent } from './home/home.component';
@@ -23,6 +22,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { FriendComponent } from './home/friend/friend.component';
 import { GroupComponent } from './home/group/group.component';
 import { GroupAddComponent } from './home/group/group-add/group-add.component';
+import { GrowlModule } from 'primeng/primeng';
 
 @NgModule({
   declarations: [
@@ -47,6 +47,7 @@ import { GroupAddComponent } from './home/group/group-add/group-add.component';
     BrowserModule.withServerTransition({ appId: 'ng-cli-universal' }),
     HttpClientModule,
     FormsModule,
+    GrowlModule,
     TagInputModule,
     ReactiveFormsModule,
     RouterModule.forRoot([

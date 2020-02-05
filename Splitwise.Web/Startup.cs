@@ -13,6 +13,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Splitwise.Core.Hubs;
 using Splitwise.DomainModel.Models;
 using Splitwise.Models;
 using Splitwise.Repository.ActivityRepository;
@@ -71,6 +72,8 @@ namespace Splitwise.Web
 
             //services.AddCors();
 
+            services.AddSignalR();
+
             //Jwt Authentication
 
             var key = Encoding.UTF8.GetBytes(Configuration["ApplicationSettings:JWT_Secret"].ToString());
@@ -93,6 +96,8 @@ namespace Splitwise.Web
                 };
             });
 
+            //SignalR
+            services.AddSignalR();
 
             //AutoMapper
             var mappingConfig = new MapperConfiguration(mc =>
@@ -151,6 +156,11 @@ namespace Splitwise.Web
                 routes.MapRoute(
                     name: "default",
                     template: "{controller}/{action=Index}/{id?}");
+            });
+
+            app.UseSignalR(options =>
+            {
+                options.MapHub<MainHub>("/MainHub");
             });
 
             app.UseSpa(spa =>

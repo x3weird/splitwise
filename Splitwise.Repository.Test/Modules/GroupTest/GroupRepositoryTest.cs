@@ -27,7 +27,7 @@ namespace Splitwise.Repository.Test.Modules.GroupTest
         public GroupRepositoryTest(Initialize initialize)
         {
             _dataRepositoryMock = initialize.ServiceProvider.GetService<Mock<IDataRepository>>();
-            
+             
             _groupRepository = initialize.ServiceProvider.GetService<IGroupRepository>();
             _dataRepositoryMock.Reset();
         }

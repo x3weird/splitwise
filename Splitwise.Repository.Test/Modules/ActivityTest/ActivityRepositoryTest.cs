@@ -36,7 +36,7 @@ namespace Splitwise.Repository.Test.Modules.ActivityTest
         [Fact]
         public async Task ActivityList_ActivityUser_NotNullAsync()
         {
-            //Arange
+            //Arrange
             string userId= "7800b494-9cf4-44ca-ab1a-cef1bcc056b4";
             List<Activity> list = new List<Activity>() {
                 new Activity

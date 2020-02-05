@@ -169,13 +169,11 @@ namespace Splitwise.Repository.FriendRepository
                         }
                     }
                 }
-
             }
         }
 
         public async Task<List<ExpenseDetail>> GetFriendExpenseList(string friendId, string email)
         {
-
             int flag = 0;
             List<string> expenseIdList = new List<string>();
             var user = await _userManager.FindByEmailAsync(email);
@@ -198,6 +196,7 @@ namespace Splitwise.Repository.FriendRepository
                     expenseIdList.Add(expense.Id);
                 }
             }
+
             //var expenseIdList = _db.Ledgers.Where(l => l.UserId.Equals(user.Id)).Select(l => l.ExpenseId).Distinct();
             var allExpenseList = await _dal.Get<Expense>();
             var expenses = allExpenseList.Join(expenseIdList, e => e.Id, x => x, (e, x) => e);
