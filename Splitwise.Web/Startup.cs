@@ -62,7 +62,7 @@ namespace Splitwise.Web
 
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<SplitwiseDbContext>();
-
+            
             services.Configure<IdentityOptions>(options =>
             {
                 options.Password.RequiredLength = 6;
