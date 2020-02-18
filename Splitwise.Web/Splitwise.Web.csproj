@@ -26,10 +26,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="ClientApp\src\app\models\expense.ts" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Splitwise.Core\Splitwise.Core.csproj" />
     <ProjectReference Include="..\Splitwise.DomainModel\Splitwise.DomainModel.csproj" />
     <ProjectReference Include="..\Splitwise.Repository\Splitwise.Repository.csproj" />
     <ProjectReference Include="..\Splitwise.Util\Splitwise.Util.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <TypeScriptCompile Include="ClientApp\src\app\models\expense.ts" />
   </ItemGroup>
 
   <Target Name="DebugEnsureNodeEnv" BeforeTargets="Build" Condition=" '$(Configuration)' == 'Debug' And !Exists('$(SpaRoot)node_modules') ">

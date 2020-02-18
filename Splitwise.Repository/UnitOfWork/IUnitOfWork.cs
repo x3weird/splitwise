@@ -3,6 +3,7 @@ using Splitwise.Repository.CommentRepository;
 using Splitwise.Repository.ExpenseRepository;
 using Splitwise.Repository.FriendRepository;
 using Splitwise.Repository.GroupRepository;
+using Splitwise.Repository.NotificationRepository;
 using Splitwise.Repository.User;
 using System;
 using System.Collections.Generic;
@@ -19,6 +20,7 @@ namespace Splitwise.Repository.UnitOfWork
         IFriendRepository Friend { get; }
         IUserRepository User { get; }
         IGroupRepository Group { get; }
+        INotificationRepository Notification { get; }
 
         Task<int> Commit();
     }

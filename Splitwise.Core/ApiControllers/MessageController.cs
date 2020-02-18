@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.SignalR;
 using Splitwise.Core.Hubs;
 using Splitwise.DomainModel.Models.ApplicationClasses;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Text;
 
@@ -12,12 +13,14 @@ namespace Splitwise.Core.ApiControllers
     [ApiController]
     public class MessageController : ControllerBase
     {
-        private IHubContext<MainHub, ITypedHubClient> _hubContext;
+        //private IHubContext<MainHub, ITypedHubClient> _hubContext;
 
-        public MessageController(IHubContext<MainHub, ITypedHubClient> hubContext)
-        {
-            _hubContext = hubContext;
-        }
+        public static ConcurrentDictionary<string, List<string>> MyUsers = new ConcurrentDictionary<string, List<string>>();
+
+        //public MessageController(IHubContext<MainHub, ITypedHubClient> hubContext)
+        //{
+        //    _hubContext = hubContext;
+        //}
 
         [HttpPost]
         public string Post([FromBody]Message msg)
@@ -25,8 +28,9 @@ namespace Splitwise.Core.ApiControllers
             string retMessage = string.Empty;
             try
             {
-                _hubContext.Clients.All.BroadcastMessage(msg.Type, msg.Payload);
-                retMessage = "Success";
+                //_hubContext.Clients.All.BroadcastMessage(msg.Type, msg.Payload);
+                
+                retMessage = "Success ";
             }
             catch (Exception e)
             {
