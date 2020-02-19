@@ -22,6 +22,7 @@ using Splitwise.Repository.DataRepository;
 using Splitwise.Repository.ExpenseRepository;
 using Splitwise.Repository.FriendRepository;
 using Splitwise.Repository.GroupRepository;
+using Splitwise.Repository.NotificationRepository;
 using Splitwise.Repository.UnitOfWork;
 using Splitwise.Repository.User;
 using System;
@@ -50,6 +51,7 @@ namespace Splitwise.Web
             services.AddScoped<IExpenseRepository, ExpenseRepository>();
             services.AddScoped<IFriendRepository, FriendRepository>();
             services.AddScoped<IUserRepository, UserRepository>();
+            services.AddScoped<INotificationRepository, NotificationRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             services.AddScoped<IDataRepository, DataRepository>();

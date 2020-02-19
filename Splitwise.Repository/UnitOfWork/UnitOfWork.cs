@@ -16,6 +16,8 @@ namespace Splitwise.Repository.UnitOfWork
     public class UnitOfWork : IUnitOfWork
     {
         private readonly SplitwiseDbContext _db;
+        
+
         public IGroupRepository Group { get; private set; }
         public IUserRepository User { get; private set; }
         public ICommentRepository Comment { get; private set; }

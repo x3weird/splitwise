@@ -29,7 +29,7 @@ namespace Splitwise.Core.ApiControllers
             try
             {
                 //_hubContext.Clients.All.BroadcastMessage(msg.Type, msg.Payload);
-                
+
                 retMessage = "Success ";
             }
             catch (Exception e)
