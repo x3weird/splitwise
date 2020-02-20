@@ -29,6 +29,7 @@ namespace Splitwise.DomainModel.Models
         public DbSet<GroupExpense> GroupExpenses { get; set; }
         public DbSet<GroupMember> GroupMembers { get; set; }
         public DbSet<Ledger> Ledgers { get; set; }
+        public DbSet<NotificationHub> NotificationHubs { get; set; }
 
         #endregion
     }

@@ -27,6 +27,7 @@ using Splitwise.Repository.UnitOfWork;
 using Splitwise.Repository.User;
 using System;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Splitwise.Web
 {
@@ -74,7 +75,7 @@ namespace Splitwise.Web
 
             //services.AddCors();
 
-            services.AddSignalR();
+            
 
             //Jwt Authentication
 
@@ -96,10 +97,26 @@ namespace Splitwise.Web
                     ValidateAudience = false,
                     ClockSkew = TimeSpan.Zero
                 };
+                x.Events = new JwtBearerEvents
+                {
+                    OnMessageReceived = context =>
+                    {
+                        var accessToken = context.Request.Query["access_token"];
+
+                        // If the request is for our hub...
+                        var path = context.HttpContext.Request.Path;
+                        if (!string.IsNullOrEmpty(accessToken) &&
+                            (path.StartsWithSegments("/MainHub")))
+                        {
+                            // Read the token out of the query string
+                            context.Token = accessToken;
+                        }
+                        return Task.CompletedTask;
+                    }
+                };
             });
 
-            //SignalR
-            services.AddSignalR();
+            
 
             //AutoMapper
             var mappingConfig = new MapperConfiguration(mc =>
@@ -127,11 +144,15 @@ namespace Splitwise.Web
 
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
 
+            services.AddSignalR();
+
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
             {
                 configuration.RootPath = "ClientApp/dist";
             });
+
+            
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -153,6 +174,11 @@ namespace Splitwise.Web
             app.UseStaticFiles();
             app.UseSpaStaticFiles();
 
+            app.UseSignalR(options =>
+            {
+                options.MapHub<MainHub>("/MainHub");
+            });
+
             app.UseMvc(routes =>
             {
                 routes.MapRoute(
@@ -160,11 +186,7 @@ namespace Splitwise.Web
                     template: "{controller}/{action=Index}/{id?}");
             });
 
-            app.UseSignalR(options =>
-            {
-                options.MapHub<MainHub>("/MainHub");
-            });
-
+            
             app.UseSpa(spa =>
             {
                 // To learn more about options for serving an Angular SPA from ASP.NET Core,

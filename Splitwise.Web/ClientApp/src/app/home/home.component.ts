@@ -1,8 +1,11 @@
 
 import { Component, Input, OnInit } from '@angular/core';
+import * as signalR from '@aspnet/signalr';
 import { UserService } from '../shared/user.service';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Observable, of, EMPTY } from 'rxjs';
+import { Expense } from '../models/expense';
+import { MessageService } from 'primeng/primeng';
 
 @Component({
   selector: 'app-home',
@@ -46,11 +49,29 @@ export class HomeComponent implements OnInit {
     }
   }
 
-  constructor(private service: UserService, private fb: FormBuilder) { }
+  private connectionPromise: Promise<void>;
+
+  constructor(private service: UserService, private fb: FormBuilder, private messageService: MessageService) { }
 
   ngOnInit(): void {
 
-    
+    const connection = new signalR.HubConnectionBuilder()
+      .configureLogging(signalR.LogLevel.Information)
+      .withUrl("http://localhost:4100/MainHub", { accessTokenFactory: () => localStorage.getItem('token') })
+      .build();
+
+    this.connectionPromise = connection.start();
+    if (this.connectionPromise) {
+      this.connectionPromise.then(function () {
+        console.log('Connected!');
+        connection.invoke('ExpenseNotification');
+      }).catch(function (err) {
+        return console.error(err.toString());
+      });
+    }
+    connection.on("RecieveMessage", (expense: Expense) => {
+      this.messageService.add({ severity: "success", summary: "payload", detail: 'Via SignalR' });
+    });
 
     this.service.groupList().subscribe(
       (data: any) => { this.groupList = data; console.log(data);},

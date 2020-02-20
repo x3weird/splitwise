@@ -377,6 +377,20 @@ namespace Splitwise.DomainModel.Migrations
                     b.ToTable("Ledgers");
                 });
 
+            modelBuilder.Entity("Splitwise.DomainModel.Models.NotificationHub", b =>
+                {
+                    b.Property<string>("Id")
+                        .ValueGeneratedOnAdd();
+
+                    b.Property<string>("ConnectionId");
+
+                    b.Property<string>("UserId");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("NotificationHubs");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole")
@@ -476,7 +490,7 @@ namespace Splitwise.DomainModel.Migrations
                         .HasForeignKey("GroupId");
 
                     b.HasOne("Splitwise.DomainModel.Models.ApplicationUser", "User")
-                        .WithMany()
+                        .WithMany("GroupMembers")
                         .HasForeignKey("UserId");
                 });
 

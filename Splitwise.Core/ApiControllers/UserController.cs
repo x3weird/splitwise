@@ -65,11 +65,14 @@ namespace Splitwise.Core.ApiControllers
 
         }
 
-        [AllowAnonymous]
+        
         [HttpGet]
         [Route("logout")]
         public async Task<object> Logout()
         {
+            var claimsIdentity = this.User.Identity as ClaimsIdentity;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            await _unitOfWork.Notification.RemoveConnectedUser(userId);
             await _unitOfWork.User.Logout();
             return Ok();
         }

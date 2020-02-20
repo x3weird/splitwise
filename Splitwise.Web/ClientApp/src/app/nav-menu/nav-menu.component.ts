@@ -26,7 +26,9 @@ export class NavMenuComponent {
   }
 
   onLogout() {
+    
     localStorage.removeItem('token');
+    location.reload();
     this.service.logOut().subscribe(
       () => this.router.navigate(['/login']),
       (err) => console.log(err)

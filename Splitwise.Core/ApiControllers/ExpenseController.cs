@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
+using Splitwise.Core.Hubs;
 using Splitwise.DomainModel.Models;
 using Splitwise.Repository.UnitOfWork;
 using System;
@@ -15,10 +17,12 @@ namespace Splitwise.Core.ApiControllers
     public class ExpenseController : Controller
     {
         private readonly IUnitOfWork _unitOfWork;
+        private readonly IHubContext<MainHub> _mainHub;
 
-        public ExpenseController(IUnitOfWork unitOfWork)
+        public ExpenseController(IUnitOfWork unitOfWork, IHubContext<MainHub> MainHub)
         {
             _unitOfWork = unitOfWork;
+            _mainHub = MainHub;
         }
 
         [HttpPost]
@@ -41,6 +45,14 @@ namespace Splitwise.Core.ApiControllers
             await _unitOfWork.Commit();
             await _unitOfWork.Expense.AddExpenseInLedger(expense, addedExpense, addedActivity);
             await _unitOfWork.Commit();
+            List<NotificationHub> connectedUsers = await _unitOfWork.Notification.GetConnectedUser();
+            foreach (var item in connectedUsers)
+            {
+                if(item.UserId == currentUserId)
+                {
+                    await _mainHub.Clients.Client(item.ConnectionId).SendAsync("RecieveMessage", expense);
+                }
+            }
             return Ok();
         }
 
