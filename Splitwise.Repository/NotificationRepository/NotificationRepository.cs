@@ -19,19 +19,26 @@ namespace Splitwise.Repository.NotificationRepository
             _dal = dal;
         }
 
-        public async Task AddNotificationUser(string userId, string expenseId)
+        public async Task AddNotificationUser(ExpenseNotification expenseNotification)
         {
-            ExpenseNotification expenseNotification = new ExpenseNotification()
-            {
-                ExpenseId = expenseId,
-                UserId = userId
-            };
-
             await _dal.AddAsync<ExpenseNotification>(expenseNotification);
+        }
+
+        public async Task RemoveNotificationUser(string userId)
+        {
+            List<ExpenseNotification> expenseNotifications = await _dal.Where<ExpenseNotification>(e => e.UserId.Equals(userId)).ToListAsync();
+            _dal.RemoveRange<ExpenseNotification>(expenseNotifications);
+        }
+
+        public async Task<List<ExpenseNotification>> GetNotificationUser()
+        {
+            return await _dal.Get<ExpenseNotification>();
         }
 
         public async Task AddConnectedUser(NotificationHub notificationHub)
         {
+            var email = await _dal.Where<ApplicationUser>(a => a.Email.Equals(notificationHub.Email)).Select(s=>s.Id).FirstOrDefaultAsync();
+            notificationHub.Email = email;
             await _dal.AddAsync<NotificationHub>(notificationHub);
         }
 

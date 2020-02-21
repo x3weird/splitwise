@@ -6,7 +6,9 @@ namespace Splitwise.DomainModel.Models.ApplicationClasses
 {
     public class ExpenseNotification
     {
-        public string ExpenseId { get; set; }
+        public string Payload { get; set; }
         public string UserId { get; set; }
+        public string Detail { get; set; }
+        public string ConnectionId { get; set; }
     }
 }

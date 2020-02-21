@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.SignalR;
 using Splitwise.DomainModel.Models;
+using Splitwise.DomainModel.Models.ApplicationClasses;
 using Splitwise.Repository.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -55,6 +56,15 @@ namespace Splitwise.Core.Hubs
                     UserId = Context.User.Identity.Name
                 };
                 await _unitOfWork.Notification.AddConnectedUser(notificationHub);
+                List<ExpenseNotification> NotificationUser = await _unitOfWork.Notification.GetNotificationUser();
+           
+                foreach (var item in NotificationUser)
+                {
+                    if(item.UserId == notificationHub.UserId)
+                    {
+                        await Clients.Client(item.ConnectionId).SendAsync("RecieveMessage", item.Payload, item.Detail);
+                    }
+                }
                 await _unitOfWork.Commit();
             }
         }

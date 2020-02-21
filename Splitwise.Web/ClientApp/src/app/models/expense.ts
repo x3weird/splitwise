@@ -1,11 +1,11 @@
 
 export interface Expense {
-  Id: string;
-  Description: string;
-  Amount: number;
-  ExpenseType: string;
-  Note: string;
-  CreatedOn: Date;
-  AddedBy: string;
-  IsDeleted: boolean;
+  id: string;
+  description: string;
+  amount: number;
+  expenseType: string;
+  note: string;
+  createdOn: Date;
+  addedBy: string;
+  isDeleted: boolean;
 }

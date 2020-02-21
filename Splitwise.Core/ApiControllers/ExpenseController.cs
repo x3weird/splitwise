@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
 using Splitwise.Core.Hubs;
 using Splitwise.DomainModel.Models;
+using Splitwise.DomainModel.Models.ApplicationClasses;
 using Splitwise.Repository.UnitOfWork;
 using System;
 using System.Collections.Generic;
@@ -35,6 +36,7 @@ namespace Splitwise.Core.ApiControllers
             };
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
+            var currentUserEmail = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
             await _unitOfWork.Friend.RegisterNewFriends(inviteFriend, currentUserId);
             await _unitOfWork.Commit();
             await _unitOfWork.Friend.InviteFriend(inviteFriend, currentUserId);
@@ -46,13 +48,26 @@ namespace Splitwise.Core.ApiControllers
             await _unitOfWork.Expense.AddExpenseInLedger(expense, addedExpense, addedActivity);
             await _unitOfWork.Commit();
             List<NotificationHub> connectedUsers = await _unitOfWork.Notification.GetConnectedUser();
-            foreach (var item in connectedUsers)
+            foreach (var item in expense.EmailList)
             {
-                if(item.UserId == currentUserId)
+                foreach (var users in connectedUsers)
                 {
-                    await _mainHub.Clients.Client(item.ConnectionId).SendAsync("RecieveMessage", expense);
+                    if (users.Email == item && currentUserEmail != users.Email)
+                    {
+                        await _mainHub.Clients.Client(users.ConnectionId).SendAsync("RecieveMessage", addedExpense);
+                    } else if(currentUserEmail != users.Email)
+                    {
+                        ExpenseNotification expenseNotification = new ExpenseNotification()
+                        {
+                            UserId = users.UserId,
+                            Payload = addedExpense.Description,
+                            Detail = "Expense Added"
+                        };
+                        await _unitOfWork.Notification.AddNotificationUser(expenseNotification);
+                    }
                 }
             }
+            
             return Ok();
         }
 
