@@ -18,3 +18,23 @@ C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Repository\obj\D
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.csproj.CopyComplete
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.dll
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Splitwise.Repository.deps.json
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Splitwise.Repository.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Splitwise.Repository.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Microsoft.IdentityModel.Tokens.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Splitwise.DomainModel.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Splitwise.Util.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\System.IdentityModel.Tokens.Jwt.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Splitwise.DomainModel.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Splitwise.Util.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Microsoft.IdentityModel.Tokens.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\Microsoft.IdentityModel.Tokens.xml
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\System.IdentityModel.Tokens.Jwt.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\bin\Debug\netcoreapp2.2\System.IdentityModel.Tokens.Jwt.xml
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.csprojAssemblyReference.cache
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.csproj.CoreCompileInputs.cache
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.AssemblyInfoInputs.cache
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.AssemblyInfo.cs
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.csproj.CopyComplete
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Repository\obj\Debug\netcoreapp2.2\Splitwise.Repository.pdb

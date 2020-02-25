@@ -48,26 +48,29 @@ namespace Splitwise.Core.ApiControllers
             await _unitOfWork.Expense.AddExpenseInLedger(expense, addedExpense, addedActivity);
             await _unitOfWork.Commit();
             List<NotificationHub> connectedUsers = await _unitOfWork.Notification.GetConnectedUser();
+            ExpenseNotification expenseNotification = new ExpenseNotification()
+            {
+                Payload = addedExpense.Description,
+                Detail = "Expense Added",
+                NotificationOn = "Expense",
+                NotificationOnId = addedExpense.Id,
+                Severity = "success"
+            };
             foreach (var item in expense.EmailList)
             {
                 foreach (var users in connectedUsers)
                 {
+                    expenseNotification.UserId = users.UserId;
                     if (users.Email == item && currentUserEmail != users.Email)
                     {
-                        await _mainHub.Clients.Client(users.ConnectionId).SendAsync("RecieveMessage", addedExpense);
-                    } else if(currentUserEmail != users.Email)
+                        await _mainHub.Clients.Client(users.ConnectionId).SendAsync("RecieveMessage", expenseNotification);
+                    }
+                    else if (currentUserEmail != users.Email)
                     {
-                        ExpenseNotification expenseNotification = new ExpenseNotification()
-                        {
-                            UserId = users.UserId,
-                            Payload = addedExpense.Description,
-                            Detail = "Expense Added"
-                        };
                         await _unitOfWork.Notification.AddNotificationUser(expenseNotification);
                     }
                 }
             }
-            
             return Ok();
         }
 

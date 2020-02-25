@@ -9,3 +9,14 @@ C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.DomainModel\obj\
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.AssemblyInfo.cs
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.dll
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\bin\Debug\netcoreapp2.2\Splitwise.DomainModel.deps.json
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\bin\Debug\netcoreapp2.2\Splitwise.DomainModel.runtimeconfig.json
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\bin\Debug\netcoreapp2.2\Splitwise.DomainModel.runtimeconfig.dev.json
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\bin\Debug\netcoreapp2.2\Splitwise.DomainModel.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\bin\Debug\netcoreapp2.2\Splitwise.DomainModel.pdb
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.csprojAssemblyReference.cache
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.csproj.CoreCompileInputs.cache
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.AssemblyInfoInputs.cache
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.AssemblyInfo.cs
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.dll
+C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.DomainModel\obj\Debug\netcoreapp2.2\Splitwise.DomainModel.pdb

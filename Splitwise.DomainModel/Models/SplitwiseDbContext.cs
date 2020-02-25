@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Splitwise.DomainModel.Models.ApplicationClasses;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -30,6 +31,7 @@ namespace Splitwise.DomainModel.Models
         public DbSet<GroupMember> GroupMembers { get; set; }
         public DbSet<Ledger> Ledgers { get; set; }
         public DbSet<NotificationHub> NotificationHubs { get; set; }
+        public DbSet<ExpenseNotification> ExpenseNotifications { get; set; }
 
         #endregion
     }

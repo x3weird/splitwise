@@ -5,7 +5,7 @@ import { UserService } from '../shared/user.service';
 import { NotificationService } from '../shared/notification.service';
 import { FormGroup, FormBuilder, Validators, FormControl } from '@angular/forms';
 import { Observable, of, EMPTY } from 'rxjs';
-import { Expense } from '../models/expense';
+import { Notification } from '../models/notification';
 import { MessageService } from 'primeng/primeng';
 
 @Component({
@@ -70,13 +70,12 @@ export class HomeComponent implements OnInit {
   }
 
   private subscribeToEvents(): void {
-    this.notificationService.expenseReceived.subscribe((expense: Expense) => {
-      this.messageService.add({ severity: "success", summary: expense.description, detail: 'Expense Added' });
+    this.notificationService.expenseReceived.subscribe((notification: Notification) => {
+      this.messageService.add({ severity: notification.severity, summary: notification.payload, detail: notification.detail });
     })
   }
 
   onInviteFriend() {
-
     var email: string[] = [];
     if (Array.isArray(this.inviteFriendForm.value.email)) {
       for (var i = 0; i < this.inviteFriendForm.value.email.length; i++) {
@@ -121,5 +120,4 @@ export class HomeComponent implements OnInit {
       (err) => { console.log(err); }
     );
   }
-
 }
