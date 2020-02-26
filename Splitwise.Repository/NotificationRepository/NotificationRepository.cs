@@ -21,6 +21,8 @@ namespace Splitwise.Repository.NotificationRepository
 
         public async Task AddNotificationUser(ExpenseNotification expenseNotification)
         {
+            var userId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(expenseNotification.Email)).Select(s=>s.Id).SingleOrDefaultAsync();
+            expenseNotification.UserId = userId;
             await _dal.AddAsync<ExpenseNotification>(expenseNotification);
         }
 
@@ -37,7 +39,7 @@ namespace Splitwise.Repository.NotificationRepository
 
         public async Task AddConnectedUser(NotificationHub notificationHub)
         {
-            var email = await _dal.Where<ApplicationUser>(a => a.Email.Equals(notificationHub.Email)).Select(s=>s.Id).FirstOrDefaultAsync();
+            var email = await _dal.Where<ApplicationUser>(a => a.Id.Equals(notificationHub.UserId)).Select(s=>s.Email).FirstOrDefaultAsync();
             notificationHub.Email = email;
             await _dal.AddAsync<NotificationHub>(notificationHub);
         }

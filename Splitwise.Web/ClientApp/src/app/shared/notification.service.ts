@@ -1,7 +1,7 @@
 import { Injectable, EventEmitter } from '@angular/core';
 import { MessageService } from 'primeng/primeng';
 import * as signalR from '@aspnet/signalr';
-import { Expense } from '../models/expense';
+import { Notification } from '../models/notification';
 
 @Injectable({
   providedIn: 'root'
@@ -10,7 +10,7 @@ export class NotificationService {
 
   private connectionPromise: Promise<void>;
   private _hubConnection: signalR.HubConnection;
-  expenseReceived = new EventEmitter<Expense>();
+  expenseReceived = new EventEmitter<Notification>();
 
   constructor() {
     this.createConnection();
@@ -38,9 +38,9 @@ export class NotificationService {
   }
 
   private registerOnServerEvents(): void {
-    this._hubConnection.on("RecieveMessage", (expense: Expense) => {
+    this._hubConnection.on("RecieveMessage", (notification: Notification) => {
       //this.messageService.add({ severity: "success", summary: "payload", detail: 'Via SignalR' });
-      this.expenseReceived.emit(expense);
+      this.expenseReceived.emit(notification);
     });
   }
 

@@ -1,7 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import * as signalR from '@aspnet/signalr';
 import { MessageService } from 'primeng/components/common/api';
-import { Expense } from './models/expense';
 
 @Component({
   selector: 'app-root',

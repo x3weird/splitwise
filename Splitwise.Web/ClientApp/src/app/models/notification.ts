@@ -4,7 +4,7 @@ export interface Notification {
   payload: string;
   userId: string;
   detail: string;
-  connectedId: string;
+  emailId: string;
   notificationOn: string;
   notificationOnId: string;
   severity: string;

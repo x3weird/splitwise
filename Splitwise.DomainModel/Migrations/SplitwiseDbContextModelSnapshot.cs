@@ -175,9 +175,9 @@ namespace Splitwise.DomainModel.Migrations
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
 
-                    b.Property<string>("ConnectionId");
-
                     b.Property<string>("Detail");
+
+                    b.Property<string>("Email");
 
                     b.Property<string>("NotificationOn");
 

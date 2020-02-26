@@ -62,7 +62,6 @@ namespace Splitwise.Core.ApiControllers
             {
                 return BadRequest("InvalId Email and Password");
             }
-
         }
 
         

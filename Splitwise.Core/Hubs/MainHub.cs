@@ -54,59 +54,20 @@ namespace Splitwise.Core.Hubs
                     ConnectionId = Context.ConnectionId,
                     UserId = Context.User.Identity.Name
                 };
+
                 await _unitOfWork.Notification.AddConnectedUser(notificationHub);
+                await _unitOfWork.Commit();
                 List<ExpenseNotification> NotificationUser = await _unitOfWork.Notification.GetNotificationUser();
-           
+
                 foreach (var item in NotificationUser)
                 {
                     if(item.UserId == notificationHub.UserId)
                     {
-                        await Clients.Client(item.ConnectionId).SendAsync("RecieveMessage", NotificationUser);
+                         await Clients.Client(notificationHub.ConnectionId).SendAsync("RecieveMessage", NotificationUser);
+                        await _unitOfWork.Notification.RemoveNotificationUser(item.UserId);
                     }
                 }
-                await _unitOfWork.Commit();
-            }
-
-            if (Context.User.Identity.Name != null)
-            {
-                ExpenseNotification notificationHub2 = new ExpenseNotification
-                {
-                    Detail = "Expense",
-                    Severity = "success",
-                    ConnectionId = Context.ConnectionId,
-                    UserId = Context.User.Identity.Name
-                };
-
-                ExpenseNotification notificationHubEx = new ExpenseNotification
-                {
-                    Detail = "Expense",
-                    Severity = "success",
-                    ConnectionId = Context.ConnectionId,
-                    UserId = Context.User.Identity.Name
-                };
-
-                NotificationHub notificationHub = new NotificationHub()
-                {
-                    UserId = Context.User.Identity.Name,
-                    ConnectionId = Context.ConnectionId
-                };
-
-                NotificationHub notificationHubTest = new NotificationHub()
-                {
-                    UserId = Context.User.Identity.Name,
-                    ConnectionId = Context.ConnectionId
-                };
-
-                await _unitOfWork.Notification.AddConnectedUser(notificationHub);
-                List<ExpenseNotification> NotificationUser = await _unitOfWork.Notification.GetNotificationUser();
-
-                foreach (var item in NotificationUser)
-                {
-                    if (item.UserId == notificationHub.UserId)
-                    {
-                        await Clients.Client(item.ConnectionId).SendAsync("RecieveMessage", NotificationUser);
-                    }
-                }
+                
                 await _unitOfWork.Commit();
             }
         }

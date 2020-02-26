@@ -316,25 +316,17 @@ namespace Splitwise.Repository.ExpenseRepository
                                 }
                             }
 
-                            var check2 = await _dal.Where<Ledger>(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
+                            var check2 = await _dal.Where<Ledger>(l => l.UserId.Equals(currentUserId) && l.DebitedAmount < 0 && l.ExpenseId.Equals(expenseId)).FirstOrDefaultAsync();
                             if (check2 != null)
                             {
-                                var userCheck = await _dal.Where<Ledger>(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check.ExpenseId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
+                                var userCheck = await _dal.Where<Ledger>(l => l.UserId.Equals(userId.userId) && l.ExpenseId.Equals(check2.ExpenseId) && l.DebitedAmount > 0).SingleOrDefaultAsync();
                                 if (userCheck != null)
                                 {
                                     var a = userExpenseList.Where(ue => ue.Id.Equals(userCheck.UserId)).FirstOrDefault();
                                     if (a == null)
                                     {
-                                        //UserExpense userExpense = new UserExpense()
-                                        //{
-                                        //    Id = userCheck.UserId,
-                                        //    Name = _db.Users.Where(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).FirstOrDefault(),
-                                        //    Amount = -userCheck.DebitedAmount
-                                        //};
-
                                         UserExpense userExpense = _mapper.Map<UserExpense>(userCheck);
                                         userExpense.Name = await _dal.Where<ApplicationUser>(us => us.Id.Equals(userCheck.UserId)).Select(s => s.FirstName).SingleOrDefaultAsync();
-
                                         userExpenseList.Add(userExpense);
                                     }
                                     else
@@ -342,14 +334,12 @@ namespace Splitwise.Repository.ExpenseRepository
                                         a.Amount = a.Amount - userCheck.DebitedAmount;
                                     }
                                 }
-
                             }
                         }
-                        
                     }
-                    
                 }
             }
+
             List<Expense> settleUpList = new List<Expense>();
             foreach (var expenseId in expenseIdList)
             {

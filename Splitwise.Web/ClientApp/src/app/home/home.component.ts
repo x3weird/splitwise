@@ -71,7 +71,7 @@ export class HomeComponent implements OnInit {
 
   private subscribeToEvents(): void {
     this.notificationService.expenseReceived.subscribe((notification: Notification) => {
-      this.messageService.add({ severity: notification.severity, summary: notification.payload, detail: notification.detail });
+      this.messageService.add({ severity: notification[0].severity, summary: notification[0].payload, detail: notification[0].detail });
     })
   }
 

@@ -56,20 +56,27 @@ namespace Splitwise.Core.ApiControllers
                 NotificationOnId = addedExpense.Id,
                 Severity = "success"
             };
+            int flag=0;
             foreach (var item in expense.EmailList)
             {
-                foreach (var users in connectedUsers)
+                expenseNotification.Email = item;
+                foreach (var user in connectedUsers)
                 {
-                    expenseNotification.UserId = users.UserId;
-                    if (users.Email == item && currentUserEmail != users.Email)
+                    flag = 0;
+                    if (item.ToLower() == user.Email.ToLower() && item.ToLower() != currentUserEmail.ToLower())
                     {
-                        await _mainHub.Clients.Client(users.ConnectionId).SendAsync("RecieveMessage", expenseNotification);
-                    }
-                    else if (currentUserEmail != users.Email)
-                    {
-                        await _unitOfWork.Notification.AddNotificationUser(expenseNotification);
+                        flag = 1;
+                        await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", expenseNotification);
                     }
                 }
+
+                if(item.ToLower() != currentUserEmail.ToLower() && flag ==0)
+                {
+                    await _unitOfWork.Notification.AddNotificationUser(expenseNotification);
+                }
+
+                await _unitOfWork.Commit();
+
             }
             return Ok();
         }
