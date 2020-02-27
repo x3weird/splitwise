@@ -57,13 +57,13 @@ namespace Splitwise.Core.Hubs
 
                 await _unitOfWork.Notification.AddConnectedUser(notificationHub);
                 await _unitOfWork.Commit();
-                List<ExpenseNotification> NotificationUser = await _unitOfWork.Notification.GetNotificationUser();
+                List<Notification> NotificationUser = await _unitOfWork.Notification.GetNotificationUser();
 
                 foreach (var item in NotificationUser)
                 {
                     if(item.UserId == notificationHub.UserId)
                     {
-                         await Clients.Client(notificationHub.ConnectionId).SendAsync("RecieveMessage", NotificationUser);
+                        await Clients.Client(notificationHub.ConnectionId).SendAsync("RecieveMessage", item);
                         await _unitOfWork.Notification.RemoveNotificationUser(item.UserId);
                     }
                 }

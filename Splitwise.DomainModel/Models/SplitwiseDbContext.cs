@@ -31,7 +31,7 @@ namespace Splitwise.DomainModel.Models
         public DbSet<GroupMember> GroupMembers { get; set; }
         public DbSet<Ledger> Ledgers { get; set; }
         public DbSet<NotificationHub> NotificationHubs { get; set; }
-        public DbSet<ExpenseNotification> ExpenseNotifications { get; set; }
+        public DbSet<Notification> Notifications { get; set; }
 
         #endregion
     }

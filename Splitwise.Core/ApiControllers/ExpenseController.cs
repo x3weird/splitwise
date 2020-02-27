@@ -47,32 +47,34 @@ namespace Splitwise.Core.ApiControllers
             await _unitOfWork.Commit();
             await _unitOfWork.Expense.AddExpenseInLedger(expense, addedExpense, addedActivity);
             await _unitOfWork.Commit();
+
             List<NotificationHub> connectedUsers = await _unitOfWork.Notification.GetConnectedUser();
-            ExpenseNotification expenseNotification = new ExpenseNotification()
-            {
-                Payload = addedExpense.Description,
-                Detail = "Expense Added",
-                NotificationOn = "Expense",
-                NotificationOnId = addedExpense.Id,
-                Severity = "success"
-            };
             int flag=0;
             foreach (var item in expense.EmailList)
             {
-                expenseNotification.Email = item;
+                
+                Notification notification = new Notification()
+                {
+                    Payload = addedExpense.Description,
+                    Detail = "Expense Added",
+                    NotificationOn = "Expense",
+                    NotificationOnId = addedExpense.Id,
+                    Severity = "success",
+                    Email = item
+                };
                 foreach (var user in connectedUsers)
                 {
                     flag = 0;
                     if (item.ToLower() == user.Email.ToLower() && item.ToLower() != currentUserEmail.ToLower())
                     {
                         flag = 1;
-                        await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", expenseNotification);
+                        await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", notification);
                     }
                 }
 
                 if(item.ToLower() != currentUserEmail.ToLower() && flag ==0)
                 {
-                    await _unitOfWork.Notification.AddNotificationUser(expenseNotification);
+                    await _unitOfWork.Notification.AddNotificationUser(notification);
                 }
 
                 await _unitOfWork.Commit();
@@ -87,10 +89,103 @@ namespace Splitwise.Core.ApiControllers
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var email = claimsIdentity.FindFirst(ClaimTypes.Email)?.Value;
+            var userId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
             var expense = await _unitOfWork.Expense.AddSettleUpExpense(settleUp, email);
             await _unitOfWork.Commit();
             await _unitOfWork.Expense.SettleUp(settleUp, email, expense);
             await _unitOfWork.Commit();
+
+            List<NotificationHub> connectedUsers = await _unitOfWork.Notification.GetConnectedUser();
+            int flag = 0;
+
+            if(settleUp.Payer != "you" && settleUp.Recipient == "you")
+            {
+                Notification notification = new Notification()
+                {
+                    Payload = "Rs. "+settleUp.Amount + " is Settle Up",
+                    Detail = "Settlement Added",
+                    NotificationOn = "SettleUp",
+                    NotificationOnId = expense.Id,
+                    Severity = "success",
+                    UserId = settleUp.Payer
+                };
+
+                foreach (var user in connectedUsers)
+                {
+                    flag = 0;
+                    if (settleUp.Payer == user.UserId && settleUp.Payer != userId)
+                    {
+                        flag = 1;
+                        await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", notification);
+                    }
+                }
+
+                if (settleUp.Payer != userId && flag == 0)
+                {
+                    await _unitOfWork.Notification.AddNotificationUser(notification);
+                }
+
+                await _unitOfWork.Commit();
+            } else
+            {
+                Notification notification = new Notification()
+                {
+                    Payload = "Rs. " + settleUp.Amount + " is Settle Up",
+                    Detail = "Settlement Added",
+                    NotificationOn = "SettleUp",
+                    NotificationOnId = expense.Id,
+                    Severity = "success",
+                    UserId = settleUp.Recipient
+                };
+
+                foreach (var user in connectedUsers)
+                {
+                    flag = 0;
+                    if (settleUp.Recipient == user.UserId && settleUp.Recipient != userId)
+                    {
+                        flag = 1;
+                        await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", notification);
+                    }
+                }
+
+                if (settleUp.Recipient != userId && flag == 0)
+                {
+                    await _unitOfWork.Notification.AddNotificationUser(notification);
+                }
+
+                await _unitOfWork.Commit();
+            }
+            //foreach (var item in settleUp.Payer)
+            //{
+
+            //    Notification notification = new Notification()
+            //    {
+            //        Payload = addedExpense.Description,
+            //        Detail = "Expense Added",
+            //        NotificationOn = "Expense",
+            //        NotificationOnId = addedExpense.Id,
+            //        Severity = "success",
+            //        Email = item
+            //    };
+            //    foreach (var user in connectedUsers)
+            //    {
+            //        flag = 0;
+            //        if (item.ToLower() == user.Email.ToLower() && item.ToLower() != currentUserEmail.ToLower())
+            //        {
+            //            flag = 1;
+            //            await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", notification);
+            //        }
+            //    }
+
+            //    if (item.ToLower() != currentUserEmail.ToLower() && flag == 0)
+            //    {
+            //        await _unitOfWork.Notification.AddNotificationUser(notification);
+            //    }
+
+            //    await _unitOfWork.Commit();
+
+            //}
+
             return Ok();
         }
 
@@ -137,9 +232,16 @@ namespace Splitwise.Core.ApiControllers
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-            await _unitOfWork.Expense.UnDeleteExpense(expenseId, currentUserId);
+            int check = await _unitOfWork.Expense.UnDeleteExpense(expenseId, currentUserId);
             await _unitOfWork.Commit();
-            return Ok();
+            if(check==1)
+            {
+                return Ok();
+            } else
+            {
+                return Conflict();
+            }
+            
         }
     }
 }

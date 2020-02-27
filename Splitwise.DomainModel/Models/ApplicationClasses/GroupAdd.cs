@@ -14,6 +14,6 @@ namespace Splitwise.DomainModel.Models
         public bool SimplifyDebts { get; set; }
         public List<GroupUsers> Users { get; set; }
 
-        #endregion
+        #endregion  
     }
 }

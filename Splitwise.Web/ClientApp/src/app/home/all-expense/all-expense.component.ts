@@ -28,7 +28,7 @@ export class AllExpenseComponent implements OnInit {
       (res: any) => {
 
         console.log(res);
-        this.expenses = res;
+        this.expenses = res.sort(this.sortFunction);
 
         for (var i = 0; i < this.expenses.length; i++) {
           this.k = 0;
@@ -49,7 +49,7 @@ export class AllExpenseComponent implements OnInit {
               lentName = this.expenses[i].expenseLedgers[j].name;
             }
           }
-          if (this.k == 1) {
+          if (this.k <= 1) {
             this.paidBy.push(name);
             this.paid.push(this.amount);
 
@@ -72,6 +72,11 @@ export class AllExpenseComponent implements OnInit {
     console.log(this.expenses);
   }
 
+  sortFunction(a, b) {
+    var dateA = new Date(a.createdOn).getTime();
+    var dateB = new Date(b.createdOn).getTime();
+    return dateA > dateB ? -1 : 1;
+  };
 
   clickExpense(id: string) {
     if (document.getElementById(id).classList.contains('hide')) {

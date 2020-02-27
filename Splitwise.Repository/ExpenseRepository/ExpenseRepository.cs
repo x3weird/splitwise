@@ -419,7 +419,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
         public async Task<Expense> AddSettleUpExpense(SettleUp settleUp, string email)
         {
-            string AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
+            string AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.ToLower().Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
 
             //Expense expense = new Expense()
             //{
@@ -433,7 +433,7 @@ namespace Splitwise.Repository.ExpenseRepository
             //};
 
             Expense expense = _mapper.Map<Expense>(settleUp);
-
+            expense.AddedBy = AddedBy;
             var addedExpense = _dal.AddAsync<Expense>(expense);
 
             return expense;
@@ -443,7 +443,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
         public async Task SettleUp(SettleUp settleUp, string email, Expense expense)
         {
-            string AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
+            string AddedBy = await _dal.Where<ApplicationUser>(u => u.Email.ToLower().Equals(email.ToLower())).Select(s => s.Id).SingleAsync();
 
             if (settleUp.Group != "")
             {
@@ -512,24 +512,29 @@ namespace Splitwise.Repository.ExpenseRepository
 
         }
 
-        public async Task UnDeleteExpense(string expenseId, string currentUserId)
+        public async Task<int> UnDeleteExpense(string expenseId, string currentUserId)
         {
             var expense = await _dal.Where<Expense>(e => e.Id.Equals(expenseId)).SingleOrDefaultAsync();
-            if(expense!=null)
+            if(expense!=null && expense.IsDeleted==true)
             {
                 expense.IsDeleted = false;
+                var group = await _dal.Where<GroupExpense>(g => g.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
+                Activity activity = new Activity
+                {
+                    Log = _dal.Where<ApplicationUser>(u => u.Id.Equals(currentUserId)).Select(s => s.FirstName).Single() + " unDeleted " + expense.Description,
+                    ActivityOn = group == null ? "Expense" : "Group",
+                    ActivityOnId = group == null ? expense.Id : group.GroupId,
+                    Date = DateTime.Now
+                };
+
+                await _dal.AddAsync<Activity>(activity);
+                return 1;
+            } else
+            {
+                return 0;
             }
 
-            var group = await _dal.Where<GroupExpense>(g => g.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
-            Activity activity = new Activity
-            {
-                Log = _dal.Where<ApplicationUser>(u => u.Id.Equals(currentUserId)).Select(s => s.FirstName).SingleAsync() + " unDeleted " + expense.Description,
-                ActivityOn = group == null ? "Expense" : "Group",
-                ActivityOnId = group == null ? expense.Id : group.GroupId,
-                Date = DateTime.Now
-            };
-
-            await _dal.AddAsync<Activity>(activity);
+            
         }
     }
 }

@@ -9,8 +9,11 @@
       <label for="collapsible" class="lbl-toggle" (click)="clickExpense(expense.expenseId)">
         <span style="display:inline-block;">{{expense.createdOn.split('T')[0].split('-')[1]}}-{{expense.createdOn.split('T')[0].split('-')[0]}}<br /> {{expense.createdOn.split('T')[0].split('-')[2]}} </span>
         <span style="font-size:20px"> {{expense.description}}</span>
-        <span style="display:inline-block; position:absolute; right:180px;">{{paidBy[i]}} paid <br /> {{paid[i]}} </span>
-        <span style="display:inline-block; position:absolute; right:0px;">{{lentBy[i]}} lent {{lentTo[i]}} <br /> {{lent[i]}} </span>
+        <span style="display:inline-block; position:absolute; right:180px;" *ngIf="expense.description=='Settle-Up'">paid <br /> {{expense.amount}} </span>
+        <span style="display:inline-block; position:absolute; right:180px;" *ngIf="expense.description!='Settle-Up'">{{paidBy[i]}} paid <br /> {{paid[i]}} </span>
+        <span style="display:inline-block; position:absolute; right:0px;" *ngIf="expense.description!='Settle-Up'">{{lentBy[i]}} lent {{lentTo[i]}} <br /> {{lent[i]}} </span>
+
+        <!--*ngIf="expense.description!='Settle-Up'"-->
 
       </label>
 

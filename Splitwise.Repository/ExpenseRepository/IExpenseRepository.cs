@@ -16,6 +16,6 @@ namespace Splitwise.Repository.ExpenseRepository
         Task<Expense> AddSettleUpExpense(SettleUp settleUp, string email);
         Task<List<UserExpense>> Dashboard(string email);
         Task SettleUp(SettleUp settleUp, string email, Expense expense);
-        Task UnDeleteExpense(string expenseId, string currentUserId);
+        Task<int> UnDeleteExpense(string expenseId, string currentUserId);
     }
 }

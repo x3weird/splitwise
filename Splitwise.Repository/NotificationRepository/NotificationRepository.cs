@@ -19,22 +19,32 @@ namespace Splitwise.Repository.NotificationRepository
             _dal = dal;
         }
 
-        public async Task AddNotificationUser(ExpenseNotification expenseNotification)
+        public async Task AddNotificationUser(Notification notification)
         {
-            var userId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(expenseNotification.Email)).Select(s=>s.Id).SingleOrDefaultAsync();
-            expenseNotification.UserId = userId;
-            await _dal.AddAsync<ExpenseNotification>(expenseNotification);
+            if(notification.Email != null && notification.UserId == null)
+            {
+                var userId = await _dal.Where<ApplicationUser>(u => u.Email.Equals(notification.Email)).Select(s => s.Id).SingleOrDefaultAsync();
+                notification.UserId = userId;
+            }
+
+            if (notification.UserId != null && notification.Email == null)
+            {
+                var email = await _dal.Where<ApplicationUser>(u => u.Id.Equals(notification.UserId)).Select(s => s.Email).SingleOrDefaultAsync();
+                notification.Email = email;
+            }
+
+            await _dal.AddAsync<Notification>(notification);
         }
 
         public async Task RemoveNotificationUser(string userId)
         {
-            List<ExpenseNotification> expenseNotifications = await _dal.Where<ExpenseNotification>(e => e.UserId.Equals(userId)).ToListAsync();
-            _dal.RemoveRange<ExpenseNotification>(expenseNotifications);
+            List<Notification> notifications = await _dal.Where<Notification>(e => e.UserId.Equals(userId)).ToListAsync();
+            _dal.RemoveRange<Notification>(notifications);
         }
 
-        public async Task<List<ExpenseNotification>> GetNotificationUser()
+        public async Task<List<Notification>> GetNotificationUser()
         {
-            return await _dal.Get<ExpenseNotification>();
+            return await _dal.Get<Notification>();
         }
 
         public async Task AddConnectedUser(NotificationHub notificationHub)

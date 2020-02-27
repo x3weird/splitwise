@@ -26,8 +26,14 @@ export class ActivityComponent implements OnInit {
 
   unDeleteExpense(expenseId: string) {
     this.service.unDeleteExpense(expenseId).subscribe(
-      (res: any) => { console.log(res); },
-      (err) => { console.log(err); }
+      (res: any) => {
+        console.log(res);
+        location.reload();
+        },
+      (err) => {
+        if (err.status == 409) {alert("already deleted")}
+        console.log(err);
+      }
     );
 
 

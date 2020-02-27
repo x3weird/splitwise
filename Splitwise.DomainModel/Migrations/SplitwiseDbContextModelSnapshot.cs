@@ -170,7 +170,7 @@ namespace Splitwise.DomainModel.Migrations
                     b.ToTable("ActivityUsers");
                 });
 
-            modelBuilder.Entity("Splitwise.DomainModel.Models.ApplicationClasses.ExpenseNotification", b =>
+            modelBuilder.Entity("Splitwise.DomainModel.Models.ApplicationClasses.Notification", b =>
                 {
                     b.Property<string>("Id")
                         .ValueGeneratedOnAdd();
@@ -191,7 +191,7 @@ namespace Splitwise.DomainModel.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("ExpenseNotifications");
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("Splitwise.DomainModel.Models.ApplicationUser", b =>

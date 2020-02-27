@@ -184,14 +184,14 @@ ________________________________________________________________________________
                   <div [formGroupName]="i">
 
 
-                    <div *ngIf="modalExpenseForm.get('expenseType').value == 'Equally'">
+                    <!--<div *ngIf="modalExpenseForm.get('expenseType').value == 'Equally'">
                       <div class="form-group" style="display:inline-flex;">
                         <label>{{each.controls.email.value}}</label>
                         <div>
                           <input id="paidByPerson" type="number" class="no-border" placeholder="0.00" style="margin-left:120px" disabled formControlName="amount" />
                         </div>
                       </div>
-                    </div>
+                    </div>-->
 
                     <div *ngIf="modalExpenseForm.get('expenseType').value == 'Exact Amount'">
                       <div class="form-group" style="display:inline-flex;">
