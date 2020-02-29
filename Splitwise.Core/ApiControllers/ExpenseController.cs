@@ -204,10 +204,43 @@ namespace Splitwise.Core.ApiControllers
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-            int i = await _unitOfWork.Expense.DeleteExpense(expenseId, currentUserId);
+            Expense expense = await _unitOfWork.Expense.DeleteExpense(expenseId, currentUserId);
             await _unitOfWork.Commit();
-            if (i == 1)
+            List<string> users = await _unitOfWork.Expense.GetUniqueLedgerUsers(expenseId);
+            if (expense != null)
             {
+                List<NotificationHub> connectedUsers = await _unitOfWork.Notification.GetConnectedUser();
+                int flag = 0;
+                foreach (var item in users)
+                {
+
+                    Notification notification = new Notification()
+                    {
+                        Payload = expense.Description + " is Deleted",
+                        Detail = "Expense Deleted",
+                        NotificationOn = "Expense",
+                        NotificationOnId = expense.Id,
+                        Severity = "error",
+                        UserId = item
+                    };
+                    foreach (var user in connectedUsers)
+                    {
+                        flag = 0;
+                        if (item == user.UserId && item != currentUserId)
+                        {
+                            flag = 1;
+                            await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", notification);
+                        }
+                    }
+
+                    if (item != currentUserId && flag == 0)
+                    {
+                        await _unitOfWork.Notification.AddNotificationUser(notification);
+                    }
+
+                    await _unitOfWork.Commit();
+
+                }
                 return Ok();
             }
             else
@@ -232,10 +265,43 @@ namespace Splitwise.Core.ApiControllers
         {
             var claimsIdentity = this.User.Identity as ClaimsIdentity;
             var currentUserId = claimsIdentity.FindFirst(ClaimTypes.Name)?.Value;
-            int check = await _unitOfWork.Expense.UnDeleteExpense(expenseId, currentUserId);
+            Expense expense = await _unitOfWork.Expense.UnDeleteExpense(expenseId, currentUserId);
             await _unitOfWork.Commit();
-            if(check==1)
+            List<string> users = await _unitOfWork.Expense.GetUniqueLedgerUsers(expenseId);
+            if (expense != null)
             {
+                List<NotificationHub> connectedUsers = await _unitOfWork.Notification.GetConnectedUser();
+                int flag = 0;
+                foreach (var item in users)
+                {
+
+                    Notification notification = new Notification()
+                    {
+                        Payload = expense.Description + " is UnDeleted",
+                        Detail = "Expense UnDeleted",
+                        NotificationOn = "Expense",
+                        NotificationOnId = expense.Id,
+                        Severity = "info",
+                        UserId = item
+                    };
+                    foreach (var user in connectedUsers)
+                    {
+                        flag = 0;
+                        if (item == user.UserId && item != currentUserId)
+                        {
+                            flag = 1;
+                            await _mainHub.Clients.Client(user.ConnectionId).SendAsync("RecieveMessage", notification);
+                        }
+                    }
+
+                    if (item != currentUserId && flag == 0)
+                    {
+                        await _unitOfWork.Notification.AddNotificationUser(notification);
+                    }
+
+                    await _unitOfWork.Commit();
+
+                }
                 return Ok();
             } else
             {

@@ -36,9 +36,9 @@ namespace Splitwise.Repository.NotificationRepository
             await _dal.AddAsync<Notification>(notification);
         }
 
-        public async Task RemoveNotificationUser(string userId)
+        public async Task RemoveNotificationUser(string id)
         {
-            List<Notification> notifications = await _dal.Where<Notification>(e => e.UserId.Equals(userId)).ToListAsync();
+            List<Notification> notifications = await _dal.Where<Notification>(e => e.Id.Equals(id)).ToListAsync();
             _dal.RemoveRange<Notification>(notifications);
         }
 

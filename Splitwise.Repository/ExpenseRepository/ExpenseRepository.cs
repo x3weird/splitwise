@@ -120,7 +120,7 @@ namespace Splitwise.Repository.ExpenseRepository
             return ExpenseDetailList;
         }
 
-        public async Task<int> DeleteExpense(string expenseId, string currentUserId)
+        public async Task<Expense> DeleteExpense(string expenseId, string currentUserId)
         {
             //var expense = await _db.Expenses.Where(e => e.Id.Equals(expenseId)).SingleOrDefaultAsync();
 
@@ -128,7 +128,7 @@ namespace Splitwise.Repository.ExpenseRepository
 
             if (expense == null)
             {
-                return 0;
+                return expense;
             }
             else
             {
@@ -148,7 +148,7 @@ namespace Splitwise.Repository.ExpenseRepository
                 };
 
                 await _dal.AddAsync<Activity>(activity);
-                return 1;
+                return expense;
             }
 
             
@@ -512,10 +512,10 @@ namespace Splitwise.Repository.ExpenseRepository
 
         }
 
-        public async Task<int> UnDeleteExpense(string expenseId, string currentUserId)
+        public async Task<Expense> UnDeleteExpense(string expenseId, string currentUserId)
         {
             var expense = await _dal.Where<Expense>(e => e.Id.Equals(expenseId)).SingleOrDefaultAsync();
-            if(expense!=null && expense.IsDeleted==true)
+            if(expense!=null)
             {
                 expense.IsDeleted = false;
                 var group = await _dal.Where<GroupExpense>(g => g.ExpenseId.Equals(expenseId)).SingleOrDefaultAsync();
@@ -528,13 +528,19 @@ namespace Splitwise.Repository.ExpenseRepository
                 };
 
                 await _dal.AddAsync<Activity>(activity);
-                return 1;
+                return expense;
             } else
             {
-                return 0;
+                return expense;
             }
 
             
+        }
+
+        public async Task<List<string>> GetUniqueLedgerUsers(string expenseId)
+        {
+            List<string>  users= await  _dal.Where<Ledger>(l => l.ExpenseId.Equals(expenseId)).Select(s=>s.UserId).Distinct().ToListAsync();
+            return users;
         }
     }
 }

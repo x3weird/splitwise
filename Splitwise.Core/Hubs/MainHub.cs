@@ -64,7 +64,7 @@ namespace Splitwise.Core.Hubs
                     if(item.UserId == notificationHub.UserId)
                     {
                         await Clients.Client(notificationHub.ConnectionId).SendAsync("RecieveMessage", item);
-                        await _unitOfWork.Notification.RemoveNotificationUser(item.UserId);
+                        await _unitOfWork.Notification.RemoveNotificationUser(item.Id);
                     }
                 }
                 
