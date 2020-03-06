@@ -62,6 +62,7 @@ namespace Splitwise.Core.ApiControllers
                     Severity = "success",
                     Email = item
                 };
+
                 foreach (var user in connectedUsers)
                 {
                     flag = 0;
@@ -223,6 +224,7 @@ namespace Splitwise.Core.ApiControllers
                         Severity = "error",
                         UserId = item
                     };
+
                     foreach (var user in connectedUsers)
                     {
                         flag = 0;

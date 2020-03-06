@@ -7,11 +7,3 @@ C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Util\obj\Debug\n
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.AssemblyInfo.cs
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.dll
 C:\Users\arjunsinh\Desktop\Splitwise with api signalr\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.pdb
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\bin\Debug\netcoreapp2.2\Splitwise.Util.deps.json
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\bin\Debug\netcoreapp2.2\Splitwise.Util.dll
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\bin\Debug\netcoreapp2.2\Splitwise.Util.pdb
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.csproj.CoreCompileInputs.cache
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.AssemblyInfoInputs.cache
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.AssemblyInfo.cs
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.dll
-C:\Users\arjunsinh\source\repos\Splitwise\Splitwise.Util\obj\Debug\netcoreapp2.2\Splitwise.Util.pdb

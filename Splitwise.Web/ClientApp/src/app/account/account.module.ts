@@ -8,6 +8,6 @@ import { RegisterComponent } from './register/register.component';
   imports: [
     CommonModule
   ],
-  declarations: [AccountComponent, LoginComponent, RegisterComponent]
+  declarations: []
 })
 export class AccountModule { }

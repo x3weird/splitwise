@@ -7,9 +7,6 @@ import { GroupComponent } from './group/group.component';
   imports: [
     CommonModule,
   ],
-  declarations: [
-    FriendComponent,
-    GroupComponent
-  ]
+  declarations: []
 })
 export class HomeModule { }
